@@ -18,7 +18,7 @@ coverage
 /cypress/screenshots/
 
 # Editor directories and files
-.vscode/*
+**/.vscode/*
 !.vscode/extensions.json
 *.code-workspace
 .idea
@@ -32,3 +32,5 @@ coverage
 
 test-results/
 playwright-report/
+
+server/assets/*.json
