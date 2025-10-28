@@ -1,5 +1,5 @@
 import { describe } from '@std/testing/bdd';
-import { assertSpyCall, Stub, stub } from '@std/testing/mock';
+import { assertSpyCall, stub } from '@std/testing/mock';
 import { expect } from '@std/expect';
 import { DictionaryService } from './dictionary.service.ts';
 

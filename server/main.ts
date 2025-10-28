@@ -1,16 +1,22 @@
 import { Hono } from 'hono';
-import { logger } from 'hono/logger';
-import { initLogging } from './src/core/logging/index.ts';
+import { initLogging, logOnError, logOnRequest } from './src/core/logging/index.ts';
 import { DictionaryService } from './src/shared/services/dictionary.service.ts';
+import { initRedis } from './src/integrations/db/redis.ts';
 
 const app = new Hono();
 
-await initLogging();
-await DictionaryService.initDictionary();
+try {
+	await initLogging();
 
-app.use(logger());
-app.get('/', (c) => {
-	return c.text('Hello Hono!');
-});
+	app.use('*', await logOnRequest);
+	app.onError(logOnError);
+
+	await initRedis();
+	await DictionaryService.initDictionary();
+
+	app.get('/', (c) => {
+		return c.text('Hello Hono!');
+	});
+} catch {}
 
 Deno.serve(app.fetch);

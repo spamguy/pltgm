@@ -1,0 +1,24 @@
+services:
+  redis:
+    image: redis/redis-stack:7.4.0-v7
+    expose:
+      - 6379
+      - 8001
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    healthcheck:
+      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
+    volumes:
+      - redis_data:/data
+      - ./server/redis.conf:/usr/local/etc/redis/redis.conf
+
+  server:
+    ports:
+      - "8000:8000"
+    build:
+      context: server
+      dockerfile: Dockerfile
+    depends_on:
+      - redis
+
+volumes:
+  redis_data:

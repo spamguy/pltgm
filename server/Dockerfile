@@ -25,5 +25,5 @@ RUN deno cache main.ts
 
 USER deno
 EXPOSE 8000/tcp
-ENTRYPOINT [ "deno", "run", "--allow-net", "main.ts" ]
+ENTRYPOINT [ "deno", "run", "--allow-all", "main.ts" ]
 
