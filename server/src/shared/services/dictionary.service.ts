@@ -1,6 +1,7 @@
-import { resolve } from '@std/path';
+import { resolve } from 'path';
+import { createReadStream } from 'fs';
+import { createInterface } from 'readline';
 import { getLogger } from '@logtape/logtape';
-import { TextLineStream } from '@std/streams';
 
 const logger = getLogger('pltgm');
 
@@ -15,14 +16,12 @@ export class DictionaryService {
 		const t0 = performance.now();
 		this.initDictionaryBuckets();
 
-		const wordsFile = await Deno.open(this.WORDS_PATH, { read: true, write: false });
+		const wordsFileStream = createReadStream(this.WORDS_PATH, { flags: 'r' });
+		const lineInterface = createInterface({ input: wordsFileStream });
+
 		logger.info(`Words file loaded from ${this.WORDS_PATH}`);
 
-		const lineStream = wordsFile.readable
-			.pipeThrough(new TextDecoderStream())
-			.pipeThrough(new TextLineStream({}));
-
-		for await (const line of lineStream) {
+		for await (const line of lineInterface) {
 			this.processWord(line);
 		}
 		const t1 = performance.now();

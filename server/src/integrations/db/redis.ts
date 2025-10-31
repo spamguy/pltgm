@@ -1,19 +1,29 @@
-import { RedisClient } from '@iuioiua/redis';
 import { getLogger } from '@logtape/logtape';
-import { assertEquals } from '@std/assert/equals';
+import assert from 'assert';
+import { Redis } from 'ioredis';
 
-let client: RedisClient;
+let client: Redis;
 const logger = getLogger('redis');
 
-export async function initRedis() {
-	try {
-		using redisConn = await Deno.connect({ port: 6379 });
-		client = new RedisClient(redisConn);
+async function initRedis() {
+	logger.info(`Connecting to Redis at ${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`);
+	client = new Redis({
+		host: process.env.REDIS_HOST,
+		port: +process.env.REDIS_PORT! || 6379,
+		password: process.env.REDIS_PASSWORD,
+	});
 
-		assertEquals(await client.sendCommand(['PING']), 'OK');
-		logger.info('Successfully connected to Redis');
-	} catch (ex: unknown) {
-		logger.error(`Redis init failure: ${ex}`);
-		throw ex;
-	}
+	client.on('error', (error) => {
+		logger.error(error.message);
+	});
+
+	testConnection();
 }
+
+async function testConnection() {
+	const response = await client.ping();
+
+	assert(response, 'PONG');
+}
+
+export { client, initRedis };

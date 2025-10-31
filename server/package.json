@@ -1,0 +1,29 @@
+{
+	"name": "my-app",
+	"type": "module",
+	"scripts": {
+		"dev": "npm exec vite",
+		"build": "tsc",
+		"start": "node dist/index.js",
+		"test": "vitest run"
+	},
+	"dependencies": {
+		"@hono/node-server": "1.19.6",
+		"hono": "4.10.4",
+		"socket.io": "4.8.1"
+	},
+	"devDependencies": {
+		"@hono/vite-dev-server": "0.23.0",
+		"@logtape/logtape": "1.1.2",
+		"@types/node": "24.9.2",
+		"@vitest/coverage-v8": "^4.0.6",
+		"ioredis": "5.8.2",
+		"memfs": "4.50.0",
+		"oxlint": "1.25.0",
+		"prettier": "3.6.2",
+		"tsx": "4.20.6",
+		"typescript": "5.9.3",
+		"vite": "7.1.12",
+		"vitest": "4.0.6"
+	}
+}

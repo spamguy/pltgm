@@ -1,24 +1,44 @@
 services:
   redis:
     image: redis/redis-stack:7.4.0-v7
-    expose:
-      - 6379
-      - 8001
-    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    container_name: redis
+    ports:
+      - "6379:6379"
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    command:
+      [
+        "redis-server",
+        "/usr/local/etc/redis/redis.conf",
+        "--requirepass",
+        "${REDIS_PASSWORD}",
+      ]
     healthcheck:
-      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
     volumes:
       - redis_data:/data
       - ./server/redis.conf:/usr/local/etc/redis/redis.conf
+    networks:
+      - pltgm-network
 
   server:
+    environment:
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
     ports:
-      - "8000:8000"
+      - "5173:5173"
     build:
       context: server
       dockerfile: Dockerfile
     depends_on:
       - redis
+    networks:
+      - pltgm-network
 
 volumes:
   redis_data:
+
+networks:
+  pltgm-network:
+    driver: bridge
