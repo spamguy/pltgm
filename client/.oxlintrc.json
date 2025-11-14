@@ -1,0 +1,12 @@
+{
+	"plugins": ["eslint", "vue", "vitest", "unicorn", "typescript"],
+	"rules": {
+		"eslint/function-paren-newline": ["error", { "minItems": 3 }],
+    "no-restricted-syntax": [
+      "error",
+      {
+        "selector": "TSEnumDeclaration"
+      }
+    ]
+	}
+}

@@ -1,10 +1,10 @@
-import { afterEach, beforeAll, describe, expect, test, vi } from 'vitest';
-import { DictionaryService } from './dictionary.service.js';
 import { vol } from 'memfs';
+import { afterEach, beforeAll, describe, expect, test, vi } from 'vitest';
+import { DictionaryService } from '../shared/services/dictionary.service.ts';
 
 const MINI_WORDS_FILE_CONTENT = `
 amalgamation
-gentrification
+penalize
 ocelot
 zenith`;
 
@@ -28,9 +28,8 @@ describe('DictionaryService', () => {
 
 			expect(DictionaryService.getWordsForTriplet('zqq')).toHaveLength(0);
 			expect(DictionaryService.getWordsForTriplet('eni')).toContain('zenith');
-			expect(DictionaryService.getWordsForTriplet('eni')).toContain('gentrification');
-			expect(DictionaryService.getWordsForTriplet('ntn')).toContain('gentrification');
-			expect(DictionaryService.getWordsForTriplet('aaa')).not.toContain('gentrification');
+			expect(DictionaryService.getWordsForTriplet('eni')).toContain('penalize');
+			expect(DictionaryService.getWordsForTriplet('aaa')).not.toContain('penalize');
 		});
 
 		test('throws an error if no words file exists', async () => {

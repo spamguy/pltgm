@@ -1,7 +1,7 @@
-import { resolve } from 'path';
-import { createReadStream } from 'fs';
-import { createInterface } from 'readline';
 import { getLogger } from '@logtape/logtape';
+import { createReadStream } from 'fs';
+import { resolve } from 'path';
+import { createInterface } from 'readline';
 
 const logger = getLogger('pltgm');
 
@@ -19,14 +19,14 @@ export class DictionaryService {
 		const wordsFileStream = createReadStream(this.WORDS_PATH, { flags: 'r' });
 		const lineInterface = createInterface({ input: wordsFileStream });
 
-		logger.info(`Words file loaded from ${this.WORDS_PATH}`);
+		logger.info('Words file loaded from {path}', { path: this.WORDS_PATH });
 
 		for await (const line of lineInterface) {
 			this.processWord(line);
 		}
 		const t1 = performance.now();
 
-		logger.info(`Dictionary loaded in ${((t1 - t0) / 1000).toFixed(2)} sec`);
+		logger.info('Dictionary loaded in {time} sec', { time: ((t1 - t0) / 1000).toFixed(2) });
 	}
 
 	static getWordsForTriplet(triplet: string) {
@@ -34,6 +34,7 @@ export class DictionaryService {
 	}
 
 	/* #region Private functions */
+
 	private static initDictionaryBuckets(): void {
 		const a = 97;
 		const z = 122;
@@ -79,5 +80,6 @@ export class DictionaryService {
 			this.DICTIONARY.set(t, this.DICTIONARY.get(t)!.concat(word));
 		}
 	}
+
 	/* #endregion */
 }

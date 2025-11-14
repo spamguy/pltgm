@@ -1,24 +1,17 @@
-ARG NODE_VERSION=24.6.0-alpine
+# For prod, use https://bun.com/docs/guides/ecosystem/docker
+FROM oven/bun:1.3-alpine AS base
+WORKDIR /usr/src/app
 
-FROM node:${NODE_VERSION} AS dev
+FROM base AS install
+RUN mkdir -p /temp/dev
+COPY package.json bun.lock /temp/dev/
+RUN cd /temp/dev && bun install --frozen-lockfile
 
-ENV NODE_ENV=development
+# Copy node_modules from temp directory. Bun must own TS files and modules.
+FROM base AS prerelease
+COPY --chown=bun:bun --from=install /temp/dev/node_modules node_modules
+COPY --chown=bun:bun . .
+RUN ls
 
-WORKDIR /app
-
-COPY package.json package-lock.json ./
-
-RUN --mount=type=cache,target=/root/.npm npm install
-
-COPY . .
-
-# Change ownership to the node user.
-RUN chown -R node:node /app
-USER node
-
-# Expose Vite eserver port.
-EXPOSE 5173
-
-# Use a default command, can be overridden in Docker compose.yml file
-CMD [ "npm", "run", "dev", "--", "--host" ]
-
+USER bun
+ENTRYPOINT [ "bun", "run", "dev" ]

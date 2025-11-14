@@ -1,6 +1,0 @@
-{
-	"plugins": ["eslint", "node", "vitest", "unicorn", "typescript"],
-	"rules": {
-		"eslint/function-paren-newline": ["error", { "minItems": 3 }]
-	}
-}

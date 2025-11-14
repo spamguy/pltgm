@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-unresolved
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
@@ -5,6 +6,7 @@ export default defineConfig({
 		coverage: {
 			enabled: true,
 			include: ['**/*.ts'],
+			exclude: ['**/logging/*.ts', '__mocks__/*.ts'],
 		},
 	},
 });

@@ -1,21 +1,22 @@
 import { getLogger } from '@logtape/logtape';
 import assert from 'assert';
-import { Redis } from 'ioredis';
+import { createClient, type RedisClientType } from 'redis';
 
-let client: Redis;
+let client: RedisClientType;
 const logger = getLogger('redis');
 
 async function initRedis() {
-	logger.info(`Connecting to Redis at ${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`);
-	client = new Redis({
-		host: process.env.REDIS_HOST,
-		port: +process.env.REDIS_PORT! || 6379,
-		password: process.env.REDIS_PASSWORD,
-	});
+	const port = +process.env.REDIS_PORT! || 6379;
+	const url = `redis://${process.env.REDIS_HOST}:${port}`;
+	logger.info('Connecting to Redis at {url}', { url });
+
+	client = createClient({ url });
 
 	client.on('error', (error) => {
-		logger.error(error.message);
+		logger.error(error.message || 'No response from Redis server');
 	});
+
+	client.connect();
 
 	testConnection();
 }

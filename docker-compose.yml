@@ -4,15 +4,7 @@ services:
     container_name: redis
     ports:
       - "6379:6379"
-    environment:
-      - REDIS_PASSWORD=${REDIS_PASSWORD}
-    command:
-      [
-        "redis-server",
-        "/usr/local/etc/redis/redis.conf",
-        "--requirepass",
-        "${REDIS_PASSWORD}",
-      ]
+      - "8001:8001" # Insight
     healthcheck:
       test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
     volumes:
@@ -25,14 +17,31 @@ services:
     environment:
       - REDIS_HOST=${REDIS_HOST}
       - REDIS_PORT=${REDIS_PORT}
-      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - SERVER_PORT=${SERVER_PORT}
+      - CLIENT_PORT=${CLIENT_PORT}
     ports:
-      - "5173:5173"
+      - "3000:3000"
     build:
       context: server
       dockerfile: Dockerfile
     depends_on:
       - redis
+    volumes:
+      - ./server/src:/app/src
+    networks:
+      - pltgm-network
+
+  client:
+    environment:
+      - VITE_SERVER_URL=${SERVER_HOST}:${SERVER_PORT}
+      - VITE_CLIENT_PORT=${CLIENT_PORT}
+    depends_on:
+      - server
+    ports:
+      - "5174:5174"
+    build:
+      context: client
+      dockerfile: Dockerfile
     networks:
       - pltgm-network
 
