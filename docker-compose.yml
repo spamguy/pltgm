@@ -26,13 +26,34 @@ services:
       - REDIS_HOST=${REDIS_HOST}
       - REDIS_PORT=${REDIS_PORT}
       - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - SERVER_VITE_PORT=${SERVER_VITE_PORT}
+      - SERVER_PORT=${SERVER_PORT}
+      - CLIENT_PORT=${CLIENT_PORT}
     ports:
-      - "5173:5173"
+      - "3000:3000"
+      - "3001:3001"
     build:
       context: server
       dockerfile: Dockerfile
     depends_on:
       - redis
+    volumes:
+      - ./server/src:/app/src
+    networks:
+      - pltgm-network
+
+  client:
+    environment:
+      - VITE_SERVER_HOST=${SERVER_HOST}
+      - VITE_SERVER_PORT=${SERVER_PORT}
+      - VITE_CLIENT_PORT=${CLIENT_PORT}
+    depends_on:
+      - server
+    ports:
+      - "5174:5174"
+    build:
+      context: client
+      dockerfile: Dockerfile
     networks:
       - pltgm-network
 

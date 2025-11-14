@@ -12,5 +12,6 @@ export default defineConfig({
 	],
 	server: {
 		host: true,
+		port: process.env.SERVER_VITE_PORT,
 	},
 });

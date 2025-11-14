@@ -1,24 +1,10 @@
-ARG NODE_VERSION=24.6.0-alpine
+# For prod, use https://bun.com/docs/guides/ecosystem/docker
+FROM oven/bun:1.3-alpine AS base
+WORKDIR /usr/src/app
 
-FROM node:${NODE_VERSION} AS dev
+COPY --chown=bun:bun package*.json vite.config.ts .
+COPY --chown=bun:bun . .
+RUN bun install
 
-ENV NODE_ENV=development
-
-WORKDIR /app
-
-COPY package.json package-lock.json ./
-
-RUN --mount=type=cache,target=/root/.npm npm install
-
-COPY . .
-
-# Change ownership to the node user.
-RUN chown -R node:node /app
-USER node
-
-# Expose Vite eserver port.
-EXPOSE 5173
-
-# Use a default command, can be overridden in Docker compose.yml file
-CMD [ "npm", "run", "dev", "--", "--host" ]
-
+USER bun
+ENTRYPOINT [ "bun", "run", "dev" ]

@@ -9,6 +9,13 @@ export function initWebsocket(server: ServerType) {
 	io = new Server(server as HttpServer, {
 		path: '/ws',
 		serveClient: false,
+		cors: {
+			origin: `http://localhost:${process.env.CLIENT_PORT}`,
+		},
+	});
+
+	io.on('error', (err) => {
+		console.error(err);
 	});
 }
 

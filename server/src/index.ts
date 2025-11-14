@@ -9,7 +9,7 @@ const app = new Hono();
 
 export const server = serve({
 	fetch: app.fetch,
-	port: 3000,
+	port: +(process.env.SERVER_PORT || 3001),
 });
 
 try {
