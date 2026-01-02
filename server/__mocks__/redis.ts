@@ -136,7 +136,7 @@ const createMockRedisClient = (): Partial<RedisClientType> => ({
 let mockClient: Partial<RedisClientType> | null = null;
 
 // Factory function to create Redis client
-export const createClient = vi.fn((options?: RedisClientOptions) => {
+export const createClient = vi.fn(() => {
 	mockClient = createMockRedisClient();
 	return mockClient as RedisClientType;
 });

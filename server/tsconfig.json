@@ -22,9 +22,13 @@
 	// 	"noUncheckedSideEffectImports": true
 	// },
 	"compilerOptions": {
-		"paths": {
-			"@/*": ["./src/*"]
-		}
+		"module": "esnext",
+		"moduleResolution": "bundler",
+		"target": "esnext",
+		"useDefineForClassFields": true,
+		"esModuleInterop": true,
+		"forceConsistentCasingInFileNames": true,
+		"libReplacement": false
 	},
 	"include": ["src", "__mocks__"]
 }

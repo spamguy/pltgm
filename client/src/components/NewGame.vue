@@ -1,12 +1,10 @@
 <script setup lang="ts">
-import fetcher from '@/fetcher';
+import { useGameStore } from '@/store/game';
 
-async function createNewGame() {
-	// socket.emit('game:create', registerNewGame);
-	const response = await fetcher('/games', { method: 'POST' });
-}
+// socket.emit('game:create', registerNewGame);
+const store = useGameStore();
 </script>
 
 <template>
-	<button @click="createNewGame">New Game</button>
+	<button @click="store.startGame()">New Game</button>
 </template>

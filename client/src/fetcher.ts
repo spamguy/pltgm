@@ -1,8 +1,8 @@
 import { join } from 'node:path';
 
 export default async function fetcher(endpoint: string, extraOptions: RequestInit) {
-	const host: string = import.meta.env.VITE_SERVER_URL;
-	const clientPort = import.meta.env.VITE_CLIENT_PORT;
+	const host: string = import.meta.env.VITE_SERVER_URL || 'localhost:3001';
+	const clientPort = import.meta.env.VITE_CLIENT_PORT || 5174;
 	const options = { ...extraOptions };
 
 	if (import.meta.env.DEV) {

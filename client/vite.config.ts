@@ -10,12 +10,18 @@ export default defineConfig({
 		vue(),
 		vueDevTools(),
 		nodePolyfills({
-			include: ['path'],
+			include: ['path', 'buffer'],
+			globals: {
+				Buffer: false,
+				global: false,
+				process: false,
+			},
 		}),
 	],
 	resolve: {
 		alias: {
 			'@': fileURLToPath(new URL('./src', import.meta.url)),
+			'#common': fileURLToPath(new URL('../server/src/common', import.meta.url)),
 		},
 	},
 	server: {

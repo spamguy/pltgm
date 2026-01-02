@@ -1,11 +1,13 @@
 import { serve } from '@hono/node-server';
+import { honoLogger } from '@logtape/hono';
+import { getLogger } from '@logtape/logtape';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
-import { initLogging, logOnError, logOnRequest } from './core/logging/logging.ts';
+import { initLogging, logOnError } from './core/logging/logging.ts';
 import { routes } from './features/games.ts';
 import { initRedis } from './integrations/db/redis.ts';
 import ioMiddleware, { initWebsocket } from './shared/middleware/sockets.ts';
-import { DictionaryService } from './shared/services/dictionary.service.ts';
+import DictionaryService from './shared/services/dictionary.service.ts';
 
 const app = new Hono();
 
@@ -19,14 +21,14 @@ try {
 	app.use(
 		'*',
 		cors({
-			origin: ['http://localhost:5174'],
+			origin: [`http://localhost:${process.env.CLIENT_PORT || 5174}`],
 			allowMethods: ['GET', 'POST', 'OPTIONS'],
 		}),
 	);
 
 	// logging init
 	await initLogging();
-	app.use('*', logOnRequest);
+	app.use(honoLogger());
 	app.onError((err, c) => logOnError(err, c));
 
 	// socket.io init
@@ -37,7 +39,11 @@ try {
 	await initRedis();
 
 	// Dictionary init
-	await DictionaryService.initDictionary();
+	if (process.env.REBUILD_DICT) {
+		await DictionaryService.initDictionary();
+	} else {
+		getLogger('pltgm').info('Skipping dictionary rebuild');
+	}
 
 	// Route config
 	app.route('/games', routes);

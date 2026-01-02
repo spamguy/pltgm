@@ -1,22 +1,32 @@
-import { PLATE_FORMAT_DICT } from '../common/constants.ts';
-import { generateRandom } from '../common/helpers.js';
-import { PlateOriginsList, type GameRound, type PlateOrigins } from '../common/types.ts';
-import { RoundService } from '../shared/services/round.service.ts';
+import { PLATE_FORMAT_DICT, SOCKETS } from '#common/constants';
+import { generateRandom } from '#common/helpers';
+import {
+	PlateOriginsList,
+	type GameRound,
+	type PlateOrigin,
+	type RoundParams,
+} from '#common/types';
+import { RoundService } from '#services/round.service';
+import { getLogger } from '@logtape/logtape';
+import type { Socket } from 'socket.io';
+import { setInterval } from 'timers/promises';
+
+const logger = getLogger('pltgm');
 
 const CAPITAL_A_CHAR_CODE = 65;
 
-async function createRound(gameId: string, roundNumber: Number): Promise<void> {
-	const origin = PlateOriginsList[generateRandom(1, PlateOriginsList.length) - 1];
-	const round: GameRound = {
-		gameId: gameId,
-		origin,
-		text: generatePlateText(origin),
-	};
+let socket: Socket;
 
-	await RoundService.saveRound(round);
+function registerRoundHandlers(s: Socket): Socket {
+	socket = s;
+	socket.on(SOCKETS.ROUND_CREATE, executeRound);
+
+	return socket;
 }
 
-function generatePlateText(origin: PlateOrigins): string {
+/* #region PRIVATE FUNCTIONS */
+
+function generatePlateText(origin: PlateOrigin): string {
 	return PLATE_FORMAT_DICT[origin].replace(/[LN]/g, (format: string) => {
 		switch (format) {
 			case 'L':
@@ -29,4 +39,49 @@ function generatePlateText(origin: PlateOrigins): string {
 	});
 }
 
-export { createRound };
+async function createRound({ gameId, roundNumber }: RoundParams): Promise<GameRound> {
+	const origin = PlateOriginsList[generateRandom(1, PlateOriginsList.length) - 1];
+	const text = generatePlateText(origin);
+	const triplet = text.replaceAll(/\d/g, '');
+	const round: GameRound = {
+		gameId: gameId,
+		origin,
+		text,
+		triplet,
+		roundNumber,
+		score: 0,
+		startTime: Date.now(),
+	};
+
+	await RoundService.saveRound(round);
+
+	return round;
+}
+
+async function executeRound(payload: RoundParams) {
+	logger.info('Starting round {roundNumber} for {gameId}', payload);
+
+	const round = await createRound(payload);
+
+	socket.emit(SOCKETS.ROUND_START, round);
+
+	const stopTime = new Date();
+	const roundLength = +(process.env.ROUND_LENGTH || 30);
+	stopTime.setSeconds(stopTime.getSeconds() + roundLength);
+	for await (const startTime of setInterval(5000, Date.now())) {
+		const now = Date.now();
+		const t𝚫 = now - startTime;
+
+		if (stopTime.getTime() - now <= 0) {
+			break;
+		}
+
+		socket.emit(SOCKETS.ROUND_PING, roundLength - t𝚫 / 1000);
+	}
+
+	socket.emit(SOCKETS.ROUND_END, await RoundService.endRound(payload));
+}
+
+/* #endregion */
+
+export { registerRoundHandlers };

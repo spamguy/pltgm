@@ -42,6 +42,9 @@ services:
     build:
       context: client
       dockerfile: Dockerfile
+    volumes:
+      - ./client/src:/app/src # Remove for prod; replace with file copy.
+      - ./server/src/common:/server/src/common
     networks:
       - pltgm-network
 

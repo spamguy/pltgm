@@ -4,9 +4,6 @@ import { Socket } from 'socket.io';
 
 import { type Game } from '../common/types.ts';
 import { GameService } from '../shared/services/game.service.ts';
-import { createRound } from './rounds.ts';
-
-const NUM_ROUNDS = 3;
 
 // #region HTTP ENDPOINTS
 
@@ -28,10 +25,6 @@ async function createGame(): Promise<Game> {
 		game.id = nanoid(8);
 	} while (await GameService.gameExists(game));
 
-	for (let r = 1; r <= NUM_ROUNDS; r++) {
-		await createRound(game.id, r);
-	}
-
 	await GameService.saveGame(game);
 
 	return game;
@@ -39,12 +32,8 @@ async function createGame(): Promise<Game> {
 
 // #endregion
 
-function registerHandlers(socket: Socket): Socket {
-	socket.on('round:start', () => {});
-
-	socket.on('round:end', () => {});
-
+function registerGameHandlers(socket: Socket): Socket {
 	return socket;
 }
 
-export { registerHandlers, routes };
+export { registerGameHandlers, routes };
