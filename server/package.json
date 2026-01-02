@@ -22,9 +22,9 @@
 		"@tsconfig/node-ts": "23.6.2",
 		"@tsconfig/node24": "24.0.3",
 		"@types/node": "24.9.2",
-		"@vitest/coverage-v8": "^4.0.6",
+		"@vitest/coverage-v8": "4.0.16",
 		"@vitest/eslint-plugin": "1.6.4",
-		"eslint": "^9.39.1",
+		"eslint": "9.39.1",
 		"eslint-config-prettier": "10.1.8",
 		"eslint-import-resolver-typescript": "4.4.4",
 		"eslint-plugin-import": "2.32.0",
@@ -35,7 +35,6 @@
 		"tsx": "4.20.6",
 		"typescript": "5.9.3",
 		"typescript-eslint": "8.50.1",
-		"vite-tsconfig-paths": "6.0.3",
-		"vitest": "4.0.6"
+		"vitest": "4.0.16"
 	}
 }

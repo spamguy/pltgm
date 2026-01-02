@@ -6,7 +6,7 @@ export default defineConfig({
 		coverage: {
 			enabled: true,
 			include: ['**/*.ts'],
-			exclude: ['**/logging/*.ts', '__mocks__/*.ts'],
+			exclude: ['**/logging/*.ts', '__mocks__/*.ts', '**/common/{constants,types}.ts'],
 		},
 	},
 });

@@ -45,7 +45,7 @@ const mockApp = {
 };
 
 vi.mock('../features/games.ts', () => ({
-	gameRoutes: mockApp,
+	routes: mockApp,
 }));
 
 vi.mock('hono', () => {

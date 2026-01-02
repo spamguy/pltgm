@@ -1,18 +1,24 @@
 // #region ENUMS
 
+export type SocketStatus = 'ok' | 'error';
+
 // Use unions to include additional origins.
 export const PlateOriginsList = ['CA'] as const;
-export type PlateOrigins = (typeof PlateOriginsList)[number];
+export type PlateOrigin = (typeof PlateOriginsList)[number];
 
 // #endregion
 
 // #region TYPES
 
+export type SocketCallback = {
+	status: SocketStatus;
+};
+
 export type GameRound = {
 	gameId: string;
-	origin: PlateOrigins;
+	origin: PlateOrigin;
 	text: string;
-	roundNum: number;
+	roundNumber: number;
 };
 
 export interface Game {

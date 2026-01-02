@@ -19,7 +19,7 @@ try {
 	app.use(
 		'*',
 		cors({
-			origin: ['http://localhost:5174'],
+			origin: [`http://localhost:${process.env.CLIENT_PORT}`],
 			allowMethods: ['GET', 'POST', 'OPTIONS'],
 		}),
 	);

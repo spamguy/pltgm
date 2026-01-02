@@ -9,7 +9,7 @@ export class RoundService {
 
 	// TODO: Refactor bottom functions into common abstraction.
 	private static keyForRound(round: GameRound): string {
-		return `round:${round.gameId}:${round.roundNum}`;
+		return `round:${round.gameId}:${round.roundNumber}`;
 	}
 
 	private static async setTtlForKey(key: string) {
