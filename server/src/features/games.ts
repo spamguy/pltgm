@@ -32,8 +32,8 @@ async function createGame(): Promise<Game> {
 
 // #endregion
 
-function registerHandlers(socket: Socket): Socket {
+function registerGameHandlers(socket: Socket): Socket {
 	return socket;
 }
 
-export { registerHandlers, routes };
+export { registerGameHandlers, routes };

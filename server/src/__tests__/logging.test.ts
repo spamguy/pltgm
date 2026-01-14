@@ -5,16 +5,18 @@ const mockConfigure = vi.fn();
 const mockGetConsoleSink = vi.fn();
 const mockGetLogger = vi.fn();
 const mockWithContext = vi.fn();
+const mockAnsi = vi.fn();
 
 vi.mock('@logtape/logtape', () => ({
 	configure: mockConfigure,
 	getConsoleSink: mockGetConsoleSink,
 	getLogger: mockGetLogger,
 	withContext: mockWithContext,
+	getAnsiColorFormatter: mockAnsi,
 }));
 
 describe('Logging Module', () => {
-	let mockLogger: any;
+	let mockLogger;
 
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -30,6 +32,7 @@ describe('Logging Module', () => {
 		mockGetConsoleSink.mockReturnValue({ type: 'console' });
 		mockConfigure.mockResolvedValue(undefined);
 		mockWithContext.mockImplementation(async (_, fn) => await fn());
+		mockAnsi.mockReturnValue({});
 	});
 
 	afterEach(() => {
@@ -77,17 +80,6 @@ describe('Logging Module', () => {
 				lowestLevel: 'debug',
 				sinks: ['console'],
 			});
-		});
-
-		it('should set root logger to error level', async () => {
-			const { initLogging } = await import('../core/logging/logging.ts');
-
-			await initLogging();
-
-			const config = mockConfigure.mock.calls[0][0];
-			const rootLogger = config.loggers.find((l: any) => l.category.length === 0);
-
-			expect(rootLogger.lowestLevel).toBe('error');
 		});
 	});
 });

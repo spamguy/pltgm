@@ -1,6 +1,6 @@
+import { routes } from '#features/games';
 import { testClient } from 'hono/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { routes } from '../features/games.ts';
 
 describe('Game routes', () => {
 	const config = vi.hoisted(() => ({
@@ -15,7 +15,7 @@ describe('Game routes', () => {
 		};
 	});
 
-	vi.mock('../shared/services/game.service.ts', () => {
+	vi.mock('../../shared/services/game.service.ts', () => {
 		return {
 			GameService: {
 				gameExists: vi.fn().mockResolvedValue(false),

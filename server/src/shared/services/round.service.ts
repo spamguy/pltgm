@@ -1,15 +1,27 @@
-import type { GameRound } from '../../common/types.ts';
+import type { GameRound, PlateOrigin } from '../../common/types.ts';
 import { client } from '../../integrations/db/redis.ts';
 
 export class RoundService {
 	static async saveRound(round: GameRound) {
-		await client.hSet(this.keyForRound(round), { ...round });
-		await this.setTtlForKey(this.keyForRound(round));
+		const key = this.keyForRound(round.gameId, round.roundNumber);
+		await client.hSet(key, { ...round });
+		await this.setTtlForKey(key);
+	}
+
+	static async getRound(gameId: string, roundNumber: number): Promise<GameRound> {
+		const { origin, text } = await client.hGetAll(this.keyForRound(gameId, roundNumber));
+
+		return {
+			gameId,
+			roundNumber,
+			origin: origin as PlateOrigin,
+			text,
+		};
 	}
 
 	// TODO: Refactor bottom functions into common abstraction.
-	private static keyForRound(round: GameRound): string {
-		return `round:${round.gameId}:${round.roundNumber}`;
+	private static keyForRound(gameId: string, roundNumber: number): string {
+		return `round:${gameId}:${roundNumber}`;
 	}
 
 	private static async setTtlForKey(key: string) {

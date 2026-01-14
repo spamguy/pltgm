@@ -29,8 +29,13 @@ export class DictionaryService {
 		logger.info('Dictionary loaded in {time} sec', { time: ((t1 - t0) / 1000).toFixed(2) });
 	}
 
-	static getWordsForTriplet(triplet: string) {
-		return this.DICTIONARY.get(triplet);
+	static getWordsForTriplet(triplet: string): string[] {
+		return this.DICTIONARY.get(triplet.toLowerCase()) || [];
+	}
+
+	static checkWord(testWord: string, triplet: string): boolean {
+		logger.debug('{triplet} -> {set}', { triplet, set: this.getWordsForTriplet(triplet) });
+		return this.getWordsForTriplet(triplet).includes(testWord.toLowerCase());
 	}
 
 	/* #region Private functions */

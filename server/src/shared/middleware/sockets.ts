@@ -1,8 +1,10 @@
+import { registerGameHandlers } from '#features/games';
+import { registerRoundHandlers } from '#features/rounds';
+import { registerWordHandlers } from '#features/words';
 import { type ServerType } from '@hono/node-server';
 import { createMiddleware } from 'hono/factory';
 import { Server as HttpServer } from 'http';
 import { Server } from 'socket.io';
-import { registerHandlers } from '../../features/games.ts';
 
 let io: Server | null;
 
@@ -16,7 +18,9 @@ export function initWebsocket(server: ServerType) {
 	});
 
 	io.on('connection', (socket) => {
-		registerHandlers(socket);
+		registerGameHandlers(socket);
+		registerRoundHandlers(socket);
+		registerWordHandlers(socket);
 	});
 
 	io.on('error', (err) => {

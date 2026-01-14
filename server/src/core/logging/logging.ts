@@ -1,5 +1,10 @@
-import { configure, getConsoleSink, getLogger, withContext } from '@logtape/logtape';
-import { getPrettyFormatter } from '@logtape/pretty';
+import {
+	configure,
+	getAnsiColorFormatter,
+	getConsoleSink,
+	getLogger,
+	withContext,
+} from '@logtape/logtape';
 import { type Context } from 'hono';
 import { type Next } from 'hono/types';
 
@@ -7,7 +12,8 @@ export async function initLogging() {
 	await configure({
 		sinks: {
 			console: getConsoleSink({
-				formatter: getPrettyFormatter({ timestamp: 'date-time', icons: false }),
+				formatter: getAnsiColorFormatter(),
+				// formatter: getPrettyFormatter({ timestamp: 'date-time', icons: false }),
 			}),
 		},
 		loggers: [
@@ -19,6 +25,7 @@ export async function initLogging() {
 	});
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function logOnError(err: any, c: Context) {
 	const logger = getLogger(['hono']);
 
