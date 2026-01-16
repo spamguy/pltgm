@@ -98,6 +98,7 @@ describe('Round features', () => {
 				gameId: 'test-game-123',
 				origin: PlateOriginsList[0],
 				text: expect.any(String),
+				triplet: expect.any(String),
 				roundNumber: 1,
 			});
 		});

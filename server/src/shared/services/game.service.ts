@@ -8,7 +8,6 @@ export class GameService extends ExpirableService {
 	}
 
 	static async saveGame(game: Game): Promise<void> {
-		await client.hSet(this.keyForGame(game), { ...game });
 		await this.setTtlForKey(this.keyForGame(game));
 	}
 

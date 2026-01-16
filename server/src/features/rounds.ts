@@ -58,7 +58,7 @@ async function executeRound(payload: Pick<GameRound, 'gameId' | 'roundNumber'>) 
 
 	socket.emit(SOCKETS.ROUND_START, round);
 
-	for await (const startTime of setInterval(100, Date.now())) {
+	for await (const startTime of setInterval(1000, Date.now())) {
 		const now = Date.now();
 
 		socket.emit(SOCKETS.ROUND_PING, now);

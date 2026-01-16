@@ -1,7 +1,8 @@
 import { serve } from '@hono/node-server';
+import { honoLogger } from '@logtape/hono';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
-import { initLogging, logOnError, logOnRequest } from './core/logging/logging.ts';
+import { initLogging, logOnError } from './core/logging/logging.ts';
 import { routes } from './features/games.ts';
 import { initRedis } from './integrations/db/redis.ts';
 import ioMiddleware, { initWebsocket } from './shared/middleware/sockets.ts';
@@ -19,14 +20,14 @@ try {
 	app.use(
 		'*',
 		cors({
-			origin: [`http://localhost:${process.env.CLIENT_PORT}`],
+			origin: [`http://localhost:${process.env.CLIENT_PORT || 5174}`],
 			allowMethods: ['GET', 'POST', 'OPTIONS'],
 		}),
 	);
 
 	// logging init
 	await initLogging();
-	app.use('*', logOnRequest);
+	app.use(honoLogger());
 	app.onError((err, c) => logOnError(err, c));
 
 	// socket.io init

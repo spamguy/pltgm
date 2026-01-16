@@ -7,7 +7,7 @@ const logger = getLogger('redis');
 
 async function initRedis() {
 	const port = +process.env.REDIS_PORT! || 6379;
-	const url = `redis://${process.env.REDIS_HOST}:${port}`;
+	const url = `redis://${process.env.REDIS_HOST || 'localhost'}:${port}`;
 	logger.info('Connecting to Redis at {url}', { url });
 
 	client = createClient({ url });

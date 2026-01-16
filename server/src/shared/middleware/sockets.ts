@@ -13,7 +13,7 @@ export function initWebsocket(server: ServerType) {
 		path: '/ws',
 		serveClient: false,
 		cors: {
-			origin: `http://localhost:${process.env.CLIENT_PORT}`,
+			origin: `http://localhost:${process.env.CLIENT_PORT || 5174}`,
 		},
 	});
 
