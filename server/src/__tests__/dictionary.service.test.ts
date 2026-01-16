@@ -1,6 +1,6 @@
 import { vol } from 'memfs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { DictionaryService } from '../shared/services/dictionary.service.ts';
+import DictionaryService from '../shared/services/dictionary.service.ts';
 
 const MINI_WORDS_FILE_CONTENT = `
 amalgamation

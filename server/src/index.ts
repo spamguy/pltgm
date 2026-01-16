@@ -5,7 +5,7 @@ import { initLogging, logOnError, logOnRequest } from './core/logging/logging.ts
 import { routes } from './features/games.ts';
 import { initRedis } from './integrations/db/redis.ts';
 import ioMiddleware, { initWebsocket } from './shared/middleware/sockets.ts';
-import { DictionaryService } from './shared/services/dictionary.service.ts';
+import DictionaryService from './shared/services/dictionary.service.ts';
 
 const app = new Hono();
 

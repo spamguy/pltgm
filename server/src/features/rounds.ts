@@ -4,6 +4,7 @@ import { PlateOriginsList, type GameRound, type PlateOrigin } from '#common/type
 import { RoundService } from '#services/round.service';
 import { getLogger } from '@logtape/logtape';
 import type { Socket } from 'socket.io';
+import { setInterval } from 'timers/promises';
 
 const logger = getLogger('pltgm');
 
@@ -13,7 +14,7 @@ let socket: Socket;
 
 function registerRoundHandlers(s: Socket): Socket {
 	socket = s;
-	socket.on(SOCKETS.ROUND_CREATE, startRound);
+	socket.on(SOCKETS.ROUND_CREATE, executeRound);
 
 	return socket;
 }
@@ -35,10 +36,13 @@ function generatePlateText(origin: PlateOrigin): string {
 
 async function createRound(gameId: string, roundNumber: number): Promise<GameRound> {
 	const origin = PlateOriginsList[generateRandom(1, PlateOriginsList.length) - 1];
+	const text = generatePlateText(origin);
+	const triplet = text.replaceAll(/\d/g, '');
 	const round: GameRound = {
 		gameId: gameId,
 		origin,
-		text: generatePlateText(origin),
+		text,
+		triplet,
 		roundNumber,
 	};
 
@@ -47,12 +51,22 @@ async function createRound(gameId: string, roundNumber: number): Promise<GameRou
 	return round;
 }
 
-async function startRound(payload: Pick<GameRound, 'gameId' | 'roundNumber'>) {
+async function executeRound(payload: Pick<GameRound, 'gameId' | 'roundNumber'>) {
 	logger.info('Starting round {roundNumber} for {gameId}', payload);
 
 	const round = await createRound(payload.gameId, payload.roundNumber);
 
 	socket.emit(SOCKETS.ROUND_START, round);
+
+	for await (const startTime of setInterval(100, Date.now())) {
+		const now = Date.now();
+
+		socket.emit(SOCKETS.ROUND_PING, now);
+
+		if (now - startTime > 30000) {
+			break;
+		}
+	}
 }
 
 /* #endregion */

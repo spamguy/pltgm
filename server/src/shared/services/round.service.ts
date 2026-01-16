@@ -9,13 +9,14 @@ export class RoundService {
 	}
 
 	static async getRound(gameId: string, roundNumber: number): Promise<GameRound> {
-		const { origin, text } = await client.hGetAll(this.keyForRound(gameId, roundNumber));
+		const { origin, text, triplet } = await client.hGetAll(this.keyForRound(gameId, roundNumber));
 
 		return {
 			gameId,
 			roundNumber,
 			origin: origin as PlateOrigin,
 			text,
+			triplet,
 		};
 	}
 

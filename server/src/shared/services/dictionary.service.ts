@@ -5,7 +5,7 @@ import { createInterface } from 'readline';
 
 const logger = getLogger('pltgm');
 
-export class DictionaryService {
+export default class DictionaryService {
 	private static readonly ASSETS_DIR = 'assets';
 
 	private static readonly WORDS_PATH = resolve(this.ASSETS_DIR, 'english-words.txt');
@@ -34,7 +34,6 @@ export class DictionaryService {
 	}
 
 	static checkWord(testWord: string, triplet: string): boolean {
-		logger.debug('{triplet} -> {set}', { triplet, set: this.getWordsForTriplet(triplet) });
 		return this.getWordsForTriplet(triplet).includes(testWord.toLowerCase());
 	}
 

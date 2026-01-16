@@ -1,6 +1,6 @@
 import { SOCKETS } from '#common/constants';
 import type { WordCheckParams } from '#common/types';
-import { DictionaryService } from '#services/dictionary.service';
+import DictionaryService from '#services/dictionary.service';
 import { RoundService } from '#services/round.service';
 import { getLogger } from '@logtape/logtape';
 import type { Socket } from 'socket.io';
@@ -18,7 +18,7 @@ function registerWordHandlers(s: Socket): Socket {
 
 async function checkWord({ gameId, roundNumber, word }: WordCheckParams) {
 	const round = await RoundService.getRound(gameId, roundNumber);
-	const isWord = DictionaryService.checkWord(word, round.text);
+	const isWord = DictionaryService.checkWord(word, round.triplet);
 
 	logger.info(`Guess {word} for {text}: ${isWord ? 'valid' : 'invalid'}`, {
 		word,
