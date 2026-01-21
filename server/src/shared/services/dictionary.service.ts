@@ -56,7 +56,14 @@ export default class DictionaryService {
 		}
 	}
 
-	private static processWord(word: string): void {
+	private static processWord(wordLine: string): void {
+		/*
+		 * Raw word list row looks like this:
+		 * ULTRAVIOLET	2032114
+		 * The number can be discarded.
+		 */
+		const word = wordLine.split('\t')[0].toLowerCase();
+
 		/*
 		 * Ignore:
 		 *   - too-short words

@@ -3,10 +3,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import DictionaryService from '../shared/services/dictionary.service.ts';
 
 const MINI_WORDS_FILE_CONTENT = `
-amalgamation
-penalize
-ocelot
-zenith`;
+AMALGAMATION	2353245
+PENALIZE	3243073506
+OCELOT	546745
+ZENITH	35463430987`;
 
 describe('DictionaryService', () => {
 	vi.mock('fs', async () => {
