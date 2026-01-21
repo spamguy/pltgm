@@ -1,15 +1,16 @@
-import type { GameRound, PlateOrigin } from '#common/types';
+import type { GameRound, PlateOrigin, RoundParams } from '#common/types';
 import { client } from '#integrations/db/redis';
+import { ExpirableService } from './expirable.service';
 
-export class RoundService {
+export class RoundService extends ExpirableService {
 	static async saveRound(round: GameRound) {
 		const key = this.keyForRound(round.gameId, round.roundNumber);
 		await client.hSet(key, { ...round });
 		await this.setTtlForKey(key);
 	}
 
-	static async getRound(gameId: string, roundNumber: number): Promise<GameRound> {
-		const { origin, text, triplet, score } = await client.hGetAll(
+	static async getRound({ gameId, roundNumber }: RoundParams): Promise<GameRound> {
+		const { origin, text, triplet, score, startTime, endTime } = await client.hGetAll(
 			this.keyForRound(gameId, roundNumber),
 		);
 
@@ -20,7 +21,13 @@ export class RoundService {
 			text,
 			triplet,
 			score: +score,
+			startTime: +startTime,
+			endTime: +endTime || undefined,
 		};
+	}
+
+	static async endRound({ gameId, roundNumber }: RoundParams): Promise<void> {
+		client.hSet(this.keyForRound(gameId, roundNumber), 'endTime', Date.now());
 	}
 
 	// TODO: Refactor bottom functions into common abstraction.
@@ -28,7 +35,7 @@ export class RoundService {
 		return `round:${gameId}:${roundNumber}`;
 	}
 
-	private static async setTtlForKey(key: string) {
+	protected static async setTtlForKey(key: string) {
 		client.expire(key, 60 * 60 * 24);
 	}
 }

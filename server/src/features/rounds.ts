@@ -1,6 +1,11 @@
 import { PLATE_FORMAT_DICT, SOCKETS } from '#common/constants';
 import { generateRandom } from '#common/helpers';
-import { PlateOriginsList, type GameRound, type PlateOrigin } from '#common/types';
+import {
+	PlateOriginsList,
+	type GameRound,
+	type PlateOrigin,
+	type RoundParams,
+} from '#common/types';
 import { RoundService } from '#services/round.service';
 import { getLogger } from '@logtape/logtape';
 import type { Socket } from 'socket.io';
@@ -34,7 +39,7 @@ function generatePlateText(origin: PlateOrigin): string {
 	});
 }
 
-async function createRound(gameId: string, roundNumber: number): Promise<GameRound> {
+async function createRound({ gameId, roundNumber }: RoundParams): Promise<GameRound> {
 	const origin = PlateOriginsList[generateRandom(1, PlateOriginsList.length) - 1];
 	const text = generatePlateText(origin);
 	const triplet = text.replaceAll(/\d/g, '');
@@ -45,6 +50,7 @@ async function createRound(gameId: string, roundNumber: number): Promise<GameRou
 		triplet,
 		roundNumber,
 		score: 0,
+		startTime: Date.now(),
 	};
 
 	await RoundService.saveRound(round);
@@ -52,10 +58,10 @@ async function createRound(gameId: string, roundNumber: number): Promise<GameRou
 	return round;
 }
 
-async function executeRound(payload: Pick<GameRound, 'gameId' | 'roundNumber'>) {
+async function executeRound(payload: RoundParams) {
 	logger.info('Starting round {roundNumber} for {gameId}', payload);
 
-	const round = await createRound(payload.gameId, payload.roundNumber);
+	const round = await createRound(payload);
 
 	socket.emit(SOCKETS.ROUND_START, round);
 
@@ -69,6 +75,7 @@ async function executeRound(payload: Pick<GameRound, 'gameId' | 'roundNumber'>) 
 		}
 	}
 
+	await RoundService.endRound(payload);
 	socket.emit(SOCKETS.ROUND_END);
 }
 

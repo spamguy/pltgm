@@ -6,6 +6,8 @@ export type SocketStatus = 'ok' | 'error';
 export const PlateOriginsList = ['CA', 'CO', 'TX', 'OK', 'WA'] as const;
 export type PlateOrigin = (typeof PlateOriginsList)[number];
 
+export type WordCheckResult = 'not_a_matching_word' | 'already_tried' | 'ok';
+
 // #endregion
 
 // #region TYPES
@@ -25,12 +27,16 @@ export type GameRound = {
 	triplet: string;
 	roundNumber: number;
 	score: number;
+	startTime: number;
+	endTime?: number;
 };
 
 export type Game = {
 	id: string;
 	createdAt: string;
 };
+
+export type RoundParams = Pick<GameRound, 'gameId' | 'roundNumber'>;
 
 export type WordCheckParams = {
 	gameId: string;

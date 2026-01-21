@@ -24,6 +24,8 @@ function checkWord() {
 	<div v-if="store.currentRound">
 		<h1>Round {{ store.currentRound.roundNumber }}: {{ store.currentRound.text }}</h1>
 
+		Score: {{ store.currentRound.score }}
+
 		<input type="text" v-model="wordGuess" /> <input type="submit" @click="checkWord()" />
 	</div>
 </template>

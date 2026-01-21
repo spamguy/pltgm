@@ -30,6 +30,15 @@ export const useGameStore = defineStore('game', {
 				this.rounds.push(newRound);
 				this.currentRoundIndex++;
 			});
+
+			socket.on(SOCKETS.ROUND_END, (roundEnd: number) => {
+				if (this.currentRound) {
+					this.currentRound.endTime = roundEnd;
+				} else {
+					throw new Error('Attempt to access nonexistent current round');
+				}
+			});
+
 			socket.emit(SOCKETS.ROUND_CREATE, { gameId: this.game.id, roundNumber: 1 });
 		},
 	},

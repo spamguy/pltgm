@@ -8,7 +8,7 @@ import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 
 // Mock dependencies
 vi.mock('#common/helpers', () => ({
-	generateRandom: vi.fn(),
+	generateRandom: vi.fn().mockReturnValue(1),
 }));
 
 vi.mock('#services/round.service', () => ({
@@ -18,70 +18,44 @@ vi.mock('#services/round.service', () => ({
 }));
 
 describe('Round features', () => {
+	let mockSocket: Socket;
+	let socketHandlers: Record<
+		string,
+		(payload: any, callback: (res: SocketCallback) => void) => void
+	>;
+
+	beforeEach(() => {
+		vi.clearAllMocks();
+		socketHandlers = {};
+
+		mockSocket = {
+			on: vi.fn(
+				(
+					event: string,
+					handler: (payload: any, callback: (res: SocketCallback) => void) => void,
+				) => {
+					socketHandlers[event] = handler;
+				},
+			),
+			emit: vi.fn(),
+		} as unknown as Socket;
+	});
+
 	describe('registerRoundHandlers', () => {
-		let mockSocket: Socket;
-		let socketHandlers: Record<
-			string,
-			(payload: any, callback: (res: SocketCallback) => void) => void
-		>;
-
-		beforeEach(() => {
-			vi.clearAllMocks();
-			socketHandlers = {};
-
-			mockSocket = {
-				on: vi.fn(
-					(
-						event: string,
-						handler: (payload: any, callback: (res: SocketCallback) => void) => void,
-					) => {
-						socketHandlers[event] = handler;
-					},
-				),
-			} as unknown as Socket;
-		});
-
-		it('should register ROUND_CREATE event handler', () => {
+		it('registers ROUND_CREATE event handler', () => {
 			registerRoundHandlers(mockSocket);
 
 			expect(mockSocket.on).toHaveBeenCalledWith(SOCKETS.ROUND_CREATE, expect.any(Function));
 		});
 
-		it('should return the socket', () => {
+		it('returns the socket', () => {
 			const result = registerRoundHandlers(mockSocket);
 			expect(result).toBe(mockSocket);
 		});
 	});
 
 	describe('startRound handler', () => {
-		let mockSocket: Socket;
-		let socketHandlers: Record<
-			string,
-			(payload: any, callback: (res: SocketCallback) => void) => void
-		>;
-		let mockCallback: Mock;
-
-		beforeEach(() => {
-			vi.clearAllMocks();
-			socketHandlers = {};
-			mockCallback = vi.fn();
-
-			mockSocket = {
-				on: vi.fn(
-					(
-						event: string,
-						handler: (payload: any, callback: (res: SocketCallback) => void) => void,
-					) => {
-						socketHandlers[event] = handler;
-					},
-				),
-			} as unknown as Socket;
-
-			// Mock generateRandom for predictable plate generation
-			(generateRandom as Mock).mockReturnValue(0);
-		});
-
-		it('should create and save a round with correct data', async () => {
+		it('creates and saves a round with correct data', async () => {
 			registerRoundHandlers(mockSocket);
 
 			const payload = {
@@ -89,21 +63,21 @@ describe('Round features', () => {
 				roundNumber: 1,
 			};
 
-			// Mock generateRandom to return first origin
-			(generateRandom as Mock).mockReturnValueOnce(1);
-
-			socketHandlers[SOCKETS.ROUND_CREATE](payload, mockCallback);
+			socketHandlers[SOCKETS.ROUND_CREATE](payload, vi.fn());
 
 			expect(RoundService.saveRound).toHaveBeenCalledWith({
 				gameId: 'test-game-123',
 				origin: PlateOriginsList[0],
-				text: expect.any(String),
-				triplet: expect.any(String),
+				text: '1BBB111', // Replacing CA format with 1s and Bs.
+				triplet: 'BBB',
 				roundNumber: 1,
+				startTime: expect.any(Number),
+				score: 0,
 			});
+			expect(RoundService.saveRound).not.toHaveBeenCalledWith('endTime');
 		});
 
-		it('should generate random origin from PlateOriginsList', async () => {
+		it('generates random origin from PlateOriginsList', async () => {
 			registerRoundHandlers(mockSocket);
 
 			const payload = {
@@ -113,7 +87,7 @@ describe('Round features', () => {
 
 			(generateRandom as Mock).mockReturnValueOnce(1);
 
-			socketHandlers[SOCKETS.ROUND_CREATE](payload, mockCallback);
+			socketHandlers[SOCKETS.ROUND_CREATE](payload, vi.fn());
 
 			expect(generateRandom).toHaveBeenCalledWith(1, PlateOriginsList.length);
 
@@ -126,33 +100,11 @@ describe('Round features', () => {
 	});
 
 	describe('error handling', () => {
-		let mockSocket: Socket;
-		let socketHandlers: Record<
-			string,
-			(payload: any, callback: (res: SocketCallback) => void) => void
-		>;
-		let mockCallback: Mock;
-
 		beforeEach(() => {
-			vi.clearAllMocks();
-			socketHandlers = {};
-			mockCallback = vi.fn();
-
-			mockSocket = {
-				on: vi.fn(
-					(
-						event: string,
-						handler: (payload: any, callback: (res: SocketCallback) => void) => void,
-					) => {
-						socketHandlers[event] = handler;
-					},
-				),
-			} as unknown as Socket;
-
 			(generateRandom as Mock).mockReturnValue(1);
 		});
 
-		it('should propagate errors from RoundService.saveRound', async () => {
+		it('propagates errors from RoundService.saveRound', async () => {
 			registerRoundHandlers(mockSocket);
 
 			const payload = {
@@ -163,7 +115,7 @@ describe('Round features', () => {
 			const error = new Error('Database error');
 			(RoundService.saveRound as Mock).mockRejectedValueOnce(error);
 
-			await expect(socketHandlers[SOCKETS.ROUND_CREATE](payload, mockCallback)).rejects.toThrow(
+			await expect(socketHandlers[SOCKETS.ROUND_CREATE](payload, vi.fn())).rejects.toThrow(
 				'Database error',
 			);
 		});

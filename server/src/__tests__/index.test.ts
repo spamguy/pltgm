@@ -22,7 +22,7 @@ vi.mock('../integrations/db/redis.ts', () => ({
 }));
 
 vi.mock('../shared/services/dictionary.service.ts', () => ({
-	DictionaryService: {
+	default: {
 		initDictionary: mockInitDictionary,
 	},
 }));

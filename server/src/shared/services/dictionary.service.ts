@@ -21,7 +21,12 @@ export default class DictionaryService {
 
 		logger.info('Words file loaded from {path}', { path: this.WORDS_PATH });
 
+		let lineNum = 0;
 		for await (const line of lineInterface) {
+			lineNum++;
+			if (lineNum % 10000 === 0) {
+				logger.debug('{ lineNum } words ({ line })...', { lineNum, line });
+			}
 			this.processWord(line);
 		}
 		const t1 = performance.now();
@@ -57,13 +62,7 @@ export default class DictionaryService {
 	}
 
 	private static processWord(wordLine: string): void {
-		/*
-		 * Raw word list row looks like this:
-		 * ULTRAVIOLET	2032114
-		 * The number can be discarded.
-		 */
-		const word = wordLine.split('\t')[0].toLowerCase();
-
+		const word = wordLine.trim().toLocaleLowerCase();
 		/*
 		 * Ignore:
 		 *   - too-short words
