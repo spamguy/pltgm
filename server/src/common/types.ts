@@ -24,6 +24,7 @@ export type GameRound = {
 	text: string;
 	triplet: string;
 	roundNumber: number;
+	score: number;
 };
 
 export type Game = {

@@ -12,6 +12,7 @@ export const SOCKETS = {
 	ROUND_CREATE: 'round:create',
 	ROUND_START: 'round:start',
 	ROUND_PING: 'round:ping',
+	ROUND_END: 'round:end',
 	WORD_CHECK: 'word:check',
 	WORD_CHECK_RESULT: 'word:check:result',
 };

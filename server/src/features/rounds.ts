@@ -44,6 +44,7 @@ async function createRound(gameId: string, roundNumber: number): Promise<GameRou
 		text,
 		triplet,
 		roundNumber,
+		score: 0,
 	};
 
 	await RoundService.saveRound(round);
@@ -67,6 +68,8 @@ async function executeRound(payload: Pick<GameRound, 'gameId' | 'roundNumber'>) 
 			break;
 		}
 	}
+
+	socket.emit(SOCKETS.ROUND_END);
 }
 
 /* #endregion */

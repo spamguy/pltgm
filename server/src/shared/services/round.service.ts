@@ -1,5 +1,5 @@
-import type { GameRound, PlateOrigin } from '../../common/types.ts';
-import { client } from '../../integrations/db/redis.ts';
+import type { GameRound, PlateOrigin } from '#common/types';
+import { client } from '#integrations/db/redis';
 
 export class RoundService {
 	static async saveRound(round: GameRound) {
@@ -9,7 +9,9 @@ export class RoundService {
 	}
 
 	static async getRound(gameId: string, roundNumber: number): Promise<GameRound> {
-		const { origin, text, triplet } = await client.hGetAll(this.keyForRound(gameId, roundNumber));
+		const { origin, text, triplet, score } = await client.hGetAll(
+			this.keyForRound(gameId, roundNumber),
+		);
 
 		return {
 			gameId,
@@ -17,6 +19,7 @@ export class RoundService {
 			origin: origin as PlateOrigin,
 			text,
 			triplet,
+			score: +score,
 		};
 	}
 

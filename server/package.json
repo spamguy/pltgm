@@ -4,7 +4,8 @@
 	"imports": {
 		"#features/*": "./src/features/*.ts",
 		"#services/*": "./src/shared/services/*.ts",
-		"#common/*": "./src/common/*.ts"
+		"#common/*": "./src/common/*.ts",
+		"#integrations/*": "./src/integrations/*.ts"
 	},
 	"scripts": {
 		"dev": "tsx watch --include ./src ./src/index.ts",
