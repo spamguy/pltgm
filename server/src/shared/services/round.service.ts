@@ -26,8 +26,14 @@ export class RoundService extends ExpirableService {
 		};
 	}
 
-	static async endRound({ gameId, roundNumber }: RoundParams): Promise<void> {
-		client.hSet(this.keyForRound(gameId, roundNumber), 'endTime', Date.now());
+	static async endRound({ gameId, roundNumber }: RoundParams): Promise<number> {
+		const endTime = Date.now();
+		client.hSet(this.keyForRound(gameId, roundNumber), 'endTime', endTime);
+		return endTime;
+	}
+
+	static async updateScore({ gameId, roundNumber }: RoundParams, newScore: number) {
+		client.hSet(this.keyForRound(gameId, roundNumber), 'score', newScore);
 	}
 
 	// TODO: Refactor bottom functions into common abstraction.

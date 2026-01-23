@@ -6,7 +6,7 @@ export type SocketStatus = 'ok' | 'error';
 export const PlateOriginsList = ['CA', 'CO', 'TX', 'OK', 'WA'] as const;
 export type PlateOrigin = (typeof PlateOriginsList)[number];
 
-export type WordCheckResult = 'not_a_matching_word' | 'already_tried' | 'ok';
+export type WordCheckResult = 'not_a_matching_word' | 'already_tried' | 'ok' | 'round_ended';
 
 // #endregion
 

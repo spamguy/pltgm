@@ -1,5 +1,6 @@
 import { serve } from '@hono/node-server';
 import { honoLogger } from '@logtape/hono';
+import { getLogger } from '@logtape/logtape';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { initLogging, logOnError } from './core/logging/logging.ts';
@@ -38,7 +39,11 @@ try {
 	await initRedis();
 
 	// Dictionary init
-	await DictionaryService.initDictionary();
+	if (process.env.REBUILD_DICT) {
+		await DictionaryService.initDictionary();
+	} else {
+		getLogger('pltgm').info('Skipping dictionary rebuild');
+	}
 
 	// Route config
 	app.route('/games', routes);

@@ -75,8 +75,7 @@ async function executeRound(payload: RoundParams) {
 		}
 	}
 
-	await RoundService.endRound(payload);
-	socket.emit(SOCKETS.ROUND_END);
+	socket.emit(SOCKETS.ROUND_END, await RoundService.endRound(payload));
 }
 
 /* #endregion */

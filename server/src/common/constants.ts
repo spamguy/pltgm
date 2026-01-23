@@ -13,6 +13,7 @@ export const SOCKETS = {
 	ROUND_START: 'round:start',
 	ROUND_PING: 'round:ping',
 	ROUND_END: 'round:end',
+	ROUND_SCORE: 'round:score',
 	WORD_CHECK: 'word:check',
 	WORD_CHECK_RESULT: 'word:check:result',
 };

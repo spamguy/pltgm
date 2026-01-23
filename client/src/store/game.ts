@@ -8,6 +8,7 @@ export type GameState = {
 	game: Game | null;
 	rounds: GameRound[];
 	currentRoundIndex: number;
+	guesses: string[];
 };
 
 export const useGameStore = defineStore('game', {
@@ -15,6 +16,7 @@ export const useGameStore = defineStore('game', {
 		game: null,
 		rounds: [],
 		currentRoundIndex: -1,
+		guesses: [],
 	}),
 	getters: {
 		currentRound(): GameRound | null {
