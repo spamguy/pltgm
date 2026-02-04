@@ -9,6 +9,7 @@
         "socket.io-client": "4.8.1",
         "vue": "3.5.22",
         "vue-router": "4.5.1",
+        "vue-timer-hook": "1.0.86",
       },
       "devDependencies": {
         "@pinia/testing": "1.0.3",
@@ -1144,6 +1145,8 @@
     "vue-eslint-parser": ["vue-eslint-parser@10.2.0", "", { "dependencies": { "debug": "^4.4.0", "eslint-scope": "^8.2.0", "eslint-visitor-keys": "^4.2.0", "espree": "^10.3.0", "esquery": "^1.6.0", "semver": "^7.6.3" }, "peerDependencies": { "eslint": "^8.57.0 || ^9.0.0" } }, "sha512-CydUvFOQKD928UzZhTp4pr2vWz1L+H99t7Pkln2QSPdvmURT0MoC4wUccfCnuEaihNsu9aYYyk+bep8rlfkUXw=="],
 
     "vue-router": ["vue-router@4.5.1", "", { "dependencies": { "@vue/devtools-api": "^6.6.4" }, "peerDependencies": { "vue": "^3.2.0" } }, "sha512-ogAF3P97NPm8fJsE4by9dwSYtDwXIY1nFY9T6DyQnGHd1E2Da94w9JIolpe42LJGIl0DwOHBi8TcRPlPGwbTtw=="],
+
+    "vue-timer-hook": ["vue-timer-hook@1.0.86", "", { "peerDependencies": { "vue": "^3.2.0" } }, "sha512-Ps+lQSYQmGVaOs95YYYfbPqZDPyEqxBeap6jZdxkAfOy+vYHfgwaZ06goR3AifOBiqiZqqcw3MUV1GSlGoFTYg=="],
 
     "vue-tsc": ["vue-tsc@3.1.0", "", { "dependencies": { "@volar/typescript": "2.4.23", "@vue/language-core": "3.1.0" }, "peerDependencies": { "typescript": ">=5.0.0" }, "bin": { "vue-tsc": "./bin/vue-tsc.js" } }, "sha512-fbMynMG7kXSnqZTRBSCh9ROYaVpXfCZbEO0gY3lqOjLbp361uuS88n6BDajiUriDIF+SGLWoinjvf6stS2J3Gg=="],
 

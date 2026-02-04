@@ -16,9 +16,7 @@ export type SocketCallback = {
 	status: SocketStatus;
 };
 
-export type WordCheckSocketCallback = SocketCallback & {
-	isWord: boolean;
-};
+export type WordCheckSocketCallback = [string, WordCheckResult];
 
 export type GameRound = {
 	gameId: string;

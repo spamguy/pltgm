@@ -1,56 +1,46 @@
 <script setup lang="ts">
 import { SOCKETS } from '#common/constants';
-import type { WordCheckResult } from '#common/types';
 import { socket } from '@/sockets';
 import { useGameStore } from '@/store/game';
+import { useRoundStore } from '@/store/round';
 import { ref } from 'vue';
 
-const store = useGameStore();
+const gameStore = useGameStore();
+const roundStore = useRoundStore();
 const wordGuess = ref('');
 const guessResult = ref('');
 
-socket.on(SOCKETS.WORD_CHECK_RESULT, (result: WordCheckResult) => {
-	if (result === 'ok' && store.currentRound) {
-		store.guesses.push(wordGuess.value);
-	}
-
-	// Trigger result message in UI.
-	guessResult.value = result;
-	setTimeout(() => {
-		guessResult.value = '';
-	}, 1000);
-});
-
-socket.on(SOCKETS.ROUND_SCORE, (newScore: number) => {
-	if (store.currentRound) {
-		store.currentRound.score = newScore;
-	}
-});
+// onMounted(() => {
+gameStore.setupSockets();
+roundStore.setupSockets();
+// });
 
 function checkWord() {
-	if (!store.currentRound) {
+	if (!gameStore.currentRound || !wordGuess.value) {
 		return;
 	}
 
 	socket.emit(SOCKETS.WORD_CHECK, {
-		gameId: store.currentRound.gameId,
-		roundNumber: store.currentRound.roundNumber,
+		gameId: gameStore.currentRound.gameId,
+		roundNumber: gameStore.currentRound.roundNumber,
 		word: wordGuess.value,
 	});
 }
 </script>
 
 <template>
-	<div v-if="store.currentRound">
-		<h1>Round {{ store.currentRound.roundNumber }}: {{ store.currentRound.text }}</h1>
+	<div v-if="gameStore.currentRound">
+		<h1>Round {{ gameStore.currentRound.roundNumber }}: {{ gameStore.currentRound.text }}</h1>
+
+		<h2>{{ roundStore.timer.seconds + 60 * roundStore.timer.minutes }}</h2>
 
 		<input type="text" v-model="wordGuess" /> <input type="submit" @click="checkWord()" />
 
-		<div>Score: {{ store.currentRound.score }}</div>
+		<div>Score: {{ roundStore.currentScore }}</div>
 		<div :class="{ 'guess-result': guessResult }">
 			<span v-if="guessResult">{{ guessResult }}</span>
 		</div>
-		<span v-if="store.currentRound.endTime">Round over</span>
+		<span v-if="gameStore.currentRound.endTime">Round over</span>
 	</div>
 </template>
 

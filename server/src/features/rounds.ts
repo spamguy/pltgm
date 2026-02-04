@@ -65,14 +65,18 @@ async function executeRound(payload: RoundParams) {
 
 	socket.emit(SOCKETS.ROUND_START, round);
 
-	for await (const startTime of setInterval(1000, Date.now())) {
+	const stopTime = new Date();
+	const roundLength = +(process.env.ROUND_LENGTH || 30);
+	stopTime.setSeconds(stopTime.getSeconds() + roundLength);
+	for await (const startTime of setInterval(5000, Date.now())) {
 		const now = Date.now();
+		const t𝚫 = now - startTime;
 
-		socket.emit(SOCKETS.ROUND_PING, now);
-
-		if (now - startTime > 30000) {
+		if (stopTime.getTime() - now <= 0) {
 			break;
 		}
+
+		socket.emit(SOCKETS.ROUND_PING, roundLength - t𝚫 / 1000);
 	}
 
 	socket.emit(SOCKETS.ROUND_END, await RoundService.endRound(payload));

@@ -8,7 +8,6 @@ export type GameState = {
 	game: Game | null;
 	rounds: GameRound[];
 	currentRoundIndex: number;
-	guesses: string[];
 };
 
 export const useGameStore = defineStore('game', {
@@ -16,7 +15,6 @@ export const useGameStore = defineStore('game', {
 		game: null,
 		rounds: [],
 		currentRoundIndex: -1,
-		guesses: [],
 	}),
 	getters: {
 		currentRound(): GameRound | null {
@@ -24,10 +22,7 @@ export const useGameStore = defineStore('game', {
 		},
 	},
 	actions: {
-		async startGame() {
-			const response = await fetcher('/games', { method: 'POST' });
-			this.game = (await response.json()) as Game;
-
+		setupSockets() {
 			socket.on(SOCKETS.ROUND_START, (newRound: GameRound) => {
 				this.rounds.push(newRound);
 				this.currentRoundIndex++;
@@ -40,6 +35,10 @@ export const useGameStore = defineStore('game', {
 					throw new Error('Attempt to access nonexistent current round');
 				}
 			});
+		},
+		async startGame() {
+			const response = await fetcher('/games', { method: 'POST' });
+			this.game = (await response.json()) as Game;
 
 			socket.emit(SOCKETS.ROUND_CREATE, { gameId: this.game.id, roundNumber: 1 });
 		},
