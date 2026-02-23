@@ -14,31 +14,24 @@ export type WordCheckResult = 'not_a_matching_word' | 'already_tried' | 'ok' | '
 
 export type SocketCallback = {
 	status: SocketStatus;
+	error?: string;
 };
 
 export type WordCheckSocketCallback = [string, WordCheckResult];
 
-export type GameRound = {
-	gameId: string;
-	origin: PlateOrigin;
-	text: string;
-	triplet: string;
-	roundNumber: number;
-	score: number;
-	startTime: number;
-	endTime?: number;
-};
-
 export type Game = {
 	id: string;
-	createdAt: string;
+	score: number;
+	createTime: number;
+	startTime?: number;
+	endTime?: number;
+	triplet: string;
+	text: string;
+	origin: PlateOrigin;
 };
-
-export type RoundParams = Pick<GameRound, 'gameId' | 'roundNumber'>;
 
 export type WordCheckParams = {
 	gameId: string;
-	roundNumber: number;
 	word: string;
 };
 

@@ -1,39 +1,72 @@
-import { Hono } from 'hono';
+import { PLATE_FORMAT_DICT, SOCKETS } from '#common/constants';
+import { generateRandomAlphanumeric, generateRandomNumber } from '#common/helpers';
+import { JorbsService } from '#services/jorbs.service';
+import { getLogger } from '@logtape/logtape';
 import { nanoid } from 'nanoid';
 import { Socket } from 'socket.io';
-
-import { type Game } from '../common/types.ts';
+import { setInterval } from 'timers/promises';
+import { PlateOriginsList, type Game, type PlateOrigin } from '../common/types.ts';
 import { GameService } from '../shared/services/game.service.ts';
 
-// #region HTTP ENDPOINTS
+const logger = getLogger('pltgm');
 
-const routes = new Hono().post('/', async (ctx) => {
-	return ctx.json(await createGame());
-});
+let socket: Socket;
 
-// #endregion
+function registerGameHandlers(s: Socket): Socket {
+	socket = s;
+	socket.on(SOCKETS.GAME_CREATE, createGame);
 
-// #region INTERNAL
-
-async function createGame(): Promise<Game> {
-	const game: Game = {
-		id: '',
-		createdAt: new Date().toUTCString(),
-	};
-
-	do {
-		game.id = nanoid(8);
-	} while (await GameService.gameExists(game));
-
-	await GameService.saveGame(game);
-
-	return game;
-}
-
-// #endregion
-
-function registerGameHandlers(socket: Socket): Socket {
 	return socket;
 }
 
-export { registerGameHandlers, routes };
+/* #region PRIVATE */
+
+async function createGame() {
+	try {
+		const triplet = await JorbsService.getCurrentTriplet();
+		const origin = PlateOriginsList[generateRandomNumber(1, PlateOriginsList.length) - 1];
+		const text = await generatePlateText(origin);
+		const game: Game = {
+			id: '',
+			createTime: Date.now(),
+			origin,
+			triplet,
+			text,
+			score: 0,
+		};
+
+		do {
+			game.id = nanoid(8);
+		} while (await GameService.gameExists(game));
+
+		await GameService.saveGame(game);
+
+		logger.info('Created new game {gameId}', { gameId: game.id });
+
+		const stopTime = new Date();
+		const roundLength = +(process.env.ROUND_LENGTH || 30);
+		stopTime.setSeconds(stopTime.getSeconds() + roundLength);
+		for await (const startTime of setInterval(5000, Date.now())) {
+			const now = Date.now();
+			const t𝚫 = now - startTime;
+
+			if (stopTime.getTime() - now <= 0) {
+				break;
+			}
+
+			socket.emit(SOCKETS.GAME_PING, roundLength - t𝚫 / 1000);
+		}
+
+		// socket.emit(SOCKETS.GAME_END, await RoundService.endRound(payload));
+	} catch (ex) {
+		logger.error(ex as Error);
+	}
+}
+
+function generatePlateText(origin: PlateOrigin): string {
+	return generateRandomAlphanumeric(PLATE_FORMAT_DICT[origin]);
+}
+
+/* #endregion */
+
+export { registerGameHandlers };

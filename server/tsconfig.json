@@ -28,7 +28,9 @@
 		"useDefineForClassFields": true,
 		"esModuleInterop": true,
 		"forceConsistentCasingInFileNames": true,
-		"libReplacement": false
+		"libReplacement": false,
+		"types": ["node"],
+		"useUnknownInCatchVariables": true
 	},
 	"include": ["src", "__mocks__"]
 }

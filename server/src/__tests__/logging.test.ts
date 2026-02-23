@@ -52,6 +52,7 @@ describe('Logging Module', () => {
 					{ category: ['redis'], lowestLevel: 'debug', sinks: ['console'] },
 					{ category: ['pltgm'], lowestLevel: 'debug', sinks: ['console'] },
 					{ category: ['hono'], lowestLevel: 'debug', sinks: ['console'] },
+					{ category: ['cron'], lowestLevel: 'debug', sinks: ['console'] },
 					{ category: [], sinks: ['console'], lowestLevel: 'error' },
 				],
 			});
@@ -64,22 +65,7 @@ describe('Logging Module', () => {
 
 			const config = mockConfigure.mock.calls[0][0];
 
-			expect(config.loggers).toHaveLength(4);
-			expect(config.loggers[0]).toEqual({
-				category: ['redis'],
-				lowestLevel: 'debug',
-				sinks: ['console'],
-			});
-			expect(config.loggers[1]).toEqual({
-				category: ['pltgm'],
-				lowestLevel: 'debug',
-				sinks: ['console'],
-			});
-			expect(config.loggers[2]).toEqual({
-				category: ['hono'],
-				lowestLevel: 'debug',
-				sinks: ['console'],
-			});
+			expect(config.loggers).toHaveLength(5);
 		});
 	});
 });

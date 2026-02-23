@@ -13,14 +13,18 @@
 		"start": "node dist/index.js",
 		"test": "vitest",
 		"coverage": "vitest run --coverage",
-    "lint": "eslint"
+		"check-types": "tsc --noEmit",
+		"eslint": "eslint",
+		"lint": "npm run eslint && npm run check-types"
 	},
 	"dependencies": {
 		"@hono/node-server": "1.19.9",
-		"@logtape/hono": "2.0.0",
-		"@logtape/logtape": "2.0.0",
-		"hono": "4.11.4",
+		"@logtape/hono": "2.0.2",
+		"@logtape/logtape": "2.0.2",
+		"date-fns": "4.1.0",
+		"hono": "4.11.9",
 		"nanoid": "5.1.6",
+		"node-cron": "4.2.1",
 		"redis": "5.10.0",
 		"socket.io": "4.8.1"
 	},
@@ -41,7 +45,7 @@
 		"prettier": "3.7.4",
 		"tsx": "4.21.0",
 		"typescript": "5.9.3",
-		"typescript-eslint": "8.50.1",
+		"typescript-eslint": "8.55.0",
 		"vitest": "4.0.16"
 	}
 }

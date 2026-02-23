@@ -4,21 +4,37 @@ import DictionaryService from '../shared/services/dictionary.service.ts';
 
 const MINI_WORDS_FILE_CONTENT = `
 AMALGAMATION
+ÉLAN
 PENALIZE
 OCELOT
+OH
 ZENITH`;
 
+const { mockSMembers, mockSAdd } = vi.hoisted(() => ({
+	mockSMembers: vi.fn(),
+	mockSAdd: vi.fn(),
+}));
+
+vi.mock('#integrations/db/redis', () => ({
+	client: {
+		sMembers: mockSMembers,
+		sAdd: mockSAdd,
+	},
+}));
+
+vi.mock('fs', async () => {
+	const memfs = await vi.importActual('memfs');
+	return memfs.fs;
+});
+
 describe('DictionaryService', () => {
-	vi.mock('fs', async () => {
-		const memfs = await vi.importActual('memfs');
-		return memfs.fs;
+	beforeEach(() => {
+		vi.clearAllMocks();
 	});
 
 	beforeEach(async () => {
 		const filePath = `${process.cwd()}/assets/english-words.txt`;
 		vol.fromJSON({ [filePath]: MINI_WORDS_FILE_CONTENT });
-
-		await DictionaryService.initDictionary();
 	});
 
 	afterEach(() => {
@@ -26,30 +42,35 @@ describe('DictionaryService', () => {
 	});
 
 	describe('initDictionary()', () => {
-		it('loads the words file', async () => {
-			expect(DictionaryService.getWordsForTriplet('zqq')).toHaveLength(0);
-			expect(DictionaryService.getWordsForTriplet('eni')).toContain('zenith');
-			expect(DictionaryService.getWordsForTriplet('eni')).toContain('penalize');
-			expect(DictionaryService.getWordsForTriplet('aaa')).not.toContain('penalize');
+		beforeEach(() => {
+			mockSAdd.mockResolvedValue(1);
 		});
 
-		it('throws an error if no words file exists', async () => {
-			vol.reset();
-			await expect(() => DictionaryService.initDictionary()).rejects.toThrowError(
-				/no such file or directory/,
-			);
-		});
-	});
+		it('stores multiple unique triplets for a longer word', async () => {
+			await DictionaryService.initDictionary();
 
-	describe('checkWord()', () => {
-		it('approves unused words found in the dictionary', () => {
-			expect(DictionaryService.checkWord('zenith', 'eni')).toBe(true);
+			// Unique triplets from "abcd": abc, abd, acd, bcd
+			const calledKeys = mockSAdd.mock.calls.map((c) => c[0]);
+			expect(calledKeys).toContain('dict:zen');
+			expect(calledKeys).toContain('dict:aml');
+			expect(calledKeys).toContain('dict:znt');
+			expect(calledKeys).toContain('dict:znh');
+			expect(mockSAdd.mock.calls.length).toBeGreaterThan(200);
 		});
 
-		it('is case insensitive for all inputs', () => {
-			expect(DictionaryService.checkWord('zENith', 'eni')).toBe(true);
-			expect(DictionaryService.checkWord('zENith', 'Eni')).toBe(true);
-			expect(DictionaryService.checkWord('zenith', 'enI')).toBe(true);
+		it('ignores words shorter than 3 characters', async () => {
+			await DictionaryService.initDictionary();
+			expect(mockSAdd).not.toHaveBeenCalledWith('dict:oh', 'oh');
+		});
+
+		it('ignores words with non-alphabetic characters', async () => {
+			await DictionaryService.initDictionary();
+			expect(mockSAdd).not.toHaveBeenCalledWith('dict:lan', 'lan');
+		});
+
+		it('trims and lowercases words before processing', async () => {
+			await DictionaryService.initDictionary();
+			expect(mockSAdd).not.toHaveBeenCalledWith('dict:ZNT', 'ZNT');
 		});
 	});
 });

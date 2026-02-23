@@ -3,9 +3,10 @@ import { honoLogger } from '@logtape/hono';
 import { getLogger } from '@logtape/logtape';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
+import { schedule } from 'node-cron';
 import { initLogging, logOnError } from './core/logging/logging.ts';
-import { routes } from './features/games.ts';
 import { initRedis } from './integrations/db/redis.ts';
+import refreshGameForDay from './shared/jorbs/refreshGameForDay.ts';
 import ioMiddleware, { initWebsocket } from './shared/middleware/sockets.ts';
 import DictionaryService from './shared/services/dictionary.service.ts';
 
@@ -45,8 +46,8 @@ try {
 		getLogger('pltgm').info('Skipping dictionary rebuild');
 	}
 
-	// Route config
-	app.route('/games', routes);
+	// Schedule daily round refresh
+	schedule('* * * * *', refreshGameForDay);
 } catch (ex) {
 	console.error(ex);
 }

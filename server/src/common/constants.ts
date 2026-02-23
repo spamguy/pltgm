@@ -9,11 +9,13 @@ export const PLATE_FORMAT_DICT: Record<PlateOrigin, string> = {
 };
 
 export const SOCKETS = {
-	ROUND_CREATE: 'round:create',
-	ROUND_START: 'round:start',
-	ROUND_PING: 'round:ping',
-	ROUND_END: 'round:end',
-	ROUND_SCORE: 'round:score',
+	APP_ERROR: 'app:error',
+	GAME_ERROR: 'game:error',
+	GAME_CREATE: 'game:create',
+	GAME_START: 'game:start',
+	GAME_PING: 'game:ping',
+	GAME_END: 'game:end',
+	GAME_SCORE: 'game:score',
 	WORD_CHECK: 'word:check',
 	WORD_CHECK_RESULT: 'word:check:result',
 };

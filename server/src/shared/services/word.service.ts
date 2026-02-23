@@ -3,12 +3,8 @@ import { client } from '#integrations/db/redis';
 import { ExpirableService } from './expirable.service';
 
 export class WordService extends ExpirableService {
-	static async addWordForRound(
-		gameId: string,
-		roundNumber: number,
-		word: string,
-	): Promise<WordCheckResult> {
-		const key = this.keyForRound(gameId, roundNumber);
+	static async addWordForRound(gameId: string, word: string): Promise<WordCheckResult> {
+		const key = this.keyForRound(gameId);
 		const result = await client.sAdd(key, word);
 
 		// Nothing was added; i.e., word already present.
@@ -29,11 +25,11 @@ export class WordService extends ExpirableService {
 		roundNumber: number,
 		word: string,
 	): Promise<boolean> {
-		return (await client.sIsMember(this.keyForRound(gameId, roundNumber), word)) === 1;
+		return (await client.sIsMember(this.keyForRound(gameId), word)) === 1;
 	}
 
-	private static keyForRound(gameId: string, roundNumber: number): string {
-		return `word:${gameId}:${roundNumber}`;
+	private static keyForRound(gameId: string): string {
+		return `word:${gameId}`;
 	}
 
 	protected static async setTtlForKey(key: string) {
