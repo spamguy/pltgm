@@ -43,9 +43,12 @@ async function createGame() {
 
 		logger.info('Created new game {gameId}', { gameId: game.id });
 
+		socket.emit(SOCKETS.GAME_CREATED, game);
+
 		const stopTime = new Date();
 		const roundLength = +(process.env.ROUND_LENGTH || 30);
 		stopTime.setSeconds(stopTime.getSeconds() + roundLength);
+		socket.emit(SOCKETS.GAME_START, roundLength * 1000);
 		for await (const startTime of setInterval(5000, Date.now())) {
 			const now = Date.now();
 			const t𝚫 = now - startTime;
@@ -57,7 +60,7 @@ async function createGame() {
 			socket.emit(SOCKETS.GAME_PING, roundLength - t𝚫 / 1000);
 		}
 
-		// socket.emit(SOCKETS.GAME_END, await RoundService.endRound(payload));
+		socket.emit(SOCKETS.GAME_END, await GameService.endGame(game.id));
 	} catch (ex) {
 		logger.error(ex as Error);
 	}

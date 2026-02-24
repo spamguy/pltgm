@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useGameStore } from '@/store/game';
 
-// socket.emit('game:create', registerNewGame);
 const store = useGameStore();
 </script>
 

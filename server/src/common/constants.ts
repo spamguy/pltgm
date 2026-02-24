@@ -12,6 +12,7 @@ export const SOCKETS = {
 	APP_ERROR: 'app:error',
 	GAME_ERROR: 'game:error',
 	GAME_CREATE: 'game:create',
+	GAME_CREATED: 'game:created',
 	GAME_START: 'game:start',
 	GAME_PING: 'game:ping',
 	GAME_END: 'game:end',

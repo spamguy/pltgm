@@ -1,9 +1,9 @@
 import { serve } from '@hono/node-server';
 import { honoLogger } from '@logtape/hono';
 import { getLogger } from '@logtape/logtape';
+import { CronJob } from 'cron';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
-import { schedule } from 'node-cron';
 import { initLogging, logOnError } from './core/logging/logging.ts';
 import { initRedis } from './integrations/db/redis.ts';
 import refreshGameForDay from './shared/jorbs/refreshGameForDay.ts';
@@ -46,8 +46,19 @@ try {
 		getLogger('pltgm').info('Skipping dictionary rebuild');
 	}
 
+	const interval = process.env.GAME_INTERVAL || '';
+	const cronTime = +interval > 0 ? `*/${interval} * * * * *` : '0 0 0 * * *';
+	const cronLogger = getLogger('cron');
 	// Schedule daily round refresh
-	schedule('* * * * *', refreshGameForDay);
+	CronJob.from({
+		cronTime,
+		start: true,
+		onTick: refreshGameForDay,
+		errorHandler: (ex) => {
+			cronLogger.error((ex as Error).message);
+		},
+	});
+	cronLogger.debug('Jorb schedule: {cronTime}', { cronTime });
 } catch (ex) {
 	console.error(ex);
 }

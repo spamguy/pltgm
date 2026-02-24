@@ -12,6 +12,12 @@ export class GameService extends ExpirableService {
 		await this.setTtlForKey(this.keyForGame(game));
 	}
 
+	static async endGame(gameId: string): Promise<number> {
+		const endTime = Date.now();
+		client.hSet(this.keyForGame(gameId), 'endTime', endTime);
+		return endTime;
+	}
+
 	static async getGame(gameId: string): Promise<Game | null> {
 		const { id, createdTime, startTime, endTime, score, triplet, text, origin } =
 			await client.hGetAll(this.keyForGame(gameId));

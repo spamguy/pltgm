@@ -14,14 +14,21 @@ describe('App', () => {
 
 	it('renders the Round Player component when a game is loaded', () => {
 		wrapper = buildWrapper({
-			game: { id: 'abc', createdAt: new Date().toUTCString() },
-			rounds: [],
-			currentRoundIndex: 0,
+			game: {
+				id: 'abc',
+				createTime: Date.now(),
+				score: 0,
+				triplet: 'aaa',
+				text: 'aaa',
+				origin: 'CA',
+			},
+			timer: 30000,
+			guesses: [],
 		});
 		expect(wrapper.text()).toBe('round started');
 	});
 
-	function buildWrapper(game: GameState = { game: null, rounds: [], currentRoundIndex: 0 }) {
+	function buildWrapper(game: GameState = { game: null, timer: 0, guesses: [] }) {
 		return mount(App, {
 			global: {
 				plugins: [
@@ -33,7 +40,7 @@ describe('App', () => {
 					NewGame: {
 						template: 'hi there',
 					},
-					RoundPlayer: {
+					GamePlayer: {
 						template: 'round started',
 					},
 				},
