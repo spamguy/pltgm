@@ -10,11 +10,14 @@ export function dateToString(date = new Date()) {
 	return format(date, 'P');
 }
 
-export function generateRandomAlphanumeric(format: string) {
+export function generateRandomAlphanumeric(format: string, values: string[] = []) {
+	let hardValue;
 	return format.replace(/[LN]/g, (format: string) => {
 		switch (format) {
 			case 'L':
-				return String.fromCharCode(CAPITAL_A_CHAR_CODE + generateRandomNumber(0, 25));
+				// Use letters from array if provided, or random letter if empty.
+				hardValue = values.shift();
+				return hardValue || String.fromCharCode(CAPITAL_A_CHAR_CODE + generateRandomNumber(0, 25));
 			case 'N':
 				return generateRandomNumber(0, 9).toString();
 			default:

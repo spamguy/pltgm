@@ -24,11 +24,12 @@ describe('App', () => {
 			},
 			timer: 30000,
 			guesses: [],
+			results: [],
 		});
 		expect(wrapper.text()).toBe('round started');
 	});
 
-	function buildWrapper(game: GameState = { game: null, timer: 0, guesses: [] }) {
+	function buildWrapper(game: GameState = { game: null, timer: 0, guesses: [], results: [] }) {
 		return mount(App, {
 			global: {
 				plugins: [

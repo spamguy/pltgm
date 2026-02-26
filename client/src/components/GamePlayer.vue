@@ -8,7 +8,7 @@ const gameStore = useGameStore();
 const wordGuess = ref('');
 const guessResult = ref('');
 const formattedTimer = computed(() => {
-	const seconds = gameStore.timer / 1000;
+	const seconds = (gameStore.timer / 1000).toFixed(1);
 
 	return `${seconds} seconds`;
 });

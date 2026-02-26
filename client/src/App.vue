@@ -12,7 +12,7 @@ store.setupSockets();
 </script>
 
 <template>
-	<NewGame v-if="!store.timer"></NewGame>
+	<NewGame v-if="store.timer <= 0"></NewGame>
 	<GamePlayer v-else></GamePlayer>
 </template>
 

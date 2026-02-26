@@ -45,13 +45,13 @@ async function checkWord({ gameId, word }: WordCheckParams): Promise<void> {
 		wordStatus = await WordService.addWordForRound(gameId, word);
 		if (wordStatus === 'ok') {
 			logger.debug('{word} for {text}: OK!', { word, text: game.text });
-			// RoundService.updateScore({ gameId, roundNumber }, round.score + 1);
+			await GameService.updateScore(gameId, game.score + 1);
 			socket.emit(SOCKETS.GAME_SCORE, game.score + 1);
 		} else {
 			logger.debug(`{word} for {text}: Already tried`, { word, text: game.text });
 		}
 
-		socket.emit(SOCKETS.WORD_CHECK_RESULT, wordStatus);
+		socket.emit(SOCKETS.WORD_CHECK_RESULT, [word, wordStatus]);
 	} catch (ex) {
 		if (!(ex instanceof Error)) {
 			return;

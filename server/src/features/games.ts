@@ -25,7 +25,7 @@ async function createGame() {
 	try {
 		const triplet = await JorbsService.getCurrentTriplet();
 		const origin = PlateOriginsList[generateRandomNumber(1, PlateOriginsList.length) - 1];
-		const text = await generatePlateText(origin);
+		const text = await generatePlateText(origin, triplet.split(''));
 		const game: Game = {
 			id: '',
 			createTime: Date.now(),
@@ -47,8 +47,11 @@ async function createGame() {
 
 		const stopTime = new Date();
 		const roundLength = +(process.env.ROUND_LENGTH || 30);
+		const roundLengthTicks = roundLength * 1000;
 		stopTime.setSeconds(stopTime.getSeconds() + roundLength);
-		socket.emit(SOCKETS.GAME_START, roundLength * 1000);
+		socket.emit(SOCKETS.GAME_START, roundLengthTicks);
+
+		// Date.now() generated once; startTime doesn't change.
 		for await (const startTime of setInterval(5000, Date.now())) {
 			const now = Date.now();
 			const t𝚫 = now - startTime;
@@ -57,7 +60,7 @@ async function createGame() {
 				break;
 			}
 
-			socket.emit(SOCKETS.GAME_PING, roundLength - t𝚫 / 1000);
+			socket.emit(SOCKETS.GAME_PING, roundLengthTicks - t𝚫);
 		}
 
 		socket.emit(SOCKETS.GAME_END, await GameService.endGame(game.id));
@@ -66,8 +69,8 @@ async function createGame() {
 	}
 }
 
-function generatePlateText(origin: PlateOrigin): string {
-	return generateRandomAlphanumeric(PLATE_FORMAT_DICT[origin]);
+function generatePlateText(origin: PlateOrigin, values: string[]): string {
+	return generateRandomAlphanumeric(PLATE_FORMAT_DICT[origin], values);
 }
 
 /* #endregion */

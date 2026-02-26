@@ -8,6 +8,7 @@ export type GameState = {
 	game: Game | null;
 	guesses: string[];
 	timer: number;
+	results: WordCheckSocketCallback[];
 };
 
 export const useGameStore = defineStore('game', {
@@ -15,6 +16,7 @@ export const useGameStore = defineStore('game', {
 		game: null,
 		guesses: [],
 		timer: 0,
+		results: [],
 	}),
 	actions: {
 		setupSockets() {
@@ -43,6 +45,8 @@ export const useGameStore = defineStore('game', {
 				if (status === 'ok') {
 					this.guesses.push(word);
 				}
+
+				this.results.push(result);
 			});
 
 			socket.on(SOCKETS.GAME_SCORE, (newScore: number) => {
@@ -51,11 +55,19 @@ export const useGameStore = defineStore('game', {
 				}
 			});
 
-			// socket.on(SOCKETS.GAME_PING, (newTimer: number) => {
-			// 	if (!this.game) {
-			// 		throw new Error('Game not active');
-			// 	}
-			// });
+			socket.on(SOCKETS.GAME_PING, (newTimer: number) => {
+				const latency = 100;
+				if (!this.game) {
+					throw new Error('Game not active');
+				}
+
+				console.debug(`Time 𝚫 (server - client) = ${(newTimer - this.timer + latency) / 1000}`);
+				this.timer = newTimer + latency;
+			});
+
+			socket.on(SOCKETS.GAME_END, () => {
+				this.timer = 0;
+			});
 		},
 		async startGame() {
 			socket.emit(SOCKETS.GAME_CREATE);

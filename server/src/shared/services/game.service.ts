@@ -1,6 +1,9 @@
+import { getLogger } from '@logtape/logtape';
 import { type Game, type PlateOrigin } from '../../common/types.ts';
 import { client } from '../../integrations/db/redis.ts';
 import { ExpirableService } from './expirable.service.ts';
+
+const logger = getLogger('pltgm');
 
 export class GameService extends ExpirableService {
 	static async gameExists(game: Game): Promise<boolean> {
@@ -14,7 +17,7 @@ export class GameService extends ExpirableService {
 
 	static async endGame(gameId: string): Promise<number> {
 		const endTime = Date.now();
-		client.hSet(this.keyForGame(gameId), 'endTime', endTime);
+		await client.hSet(this.keyForGame(gameId), 'endTime', endTime);
 		return endTime;
 	}
 
@@ -32,6 +35,11 @@ export class GameService extends ExpirableService {
 			text,
 			origin: origin as PlateOrigin,
 		};
+	}
+
+	static async updateScore(gameId: string, newScore: number): Promise<void> {
+		logger.debug('New score for {gameId}: {newScore}', { gameId, newScore });
+		await client.hSet(this.keyForGame(gameId), 'score', newScore);
 	}
 
 	private static keyForGame(game: Game | string): string {
