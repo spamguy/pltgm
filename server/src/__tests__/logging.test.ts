@@ -40,7 +40,7 @@ describe('Logging Module', () => {
 	});
 
 	describe('initLogging', () => {
-		it('should configure logging with console sink', async () => {
+		it('configures logging with console sink', async () => {
 			const { initLogging } = await import('../core/logging/logging.ts');
 
 			await initLogging();
@@ -52,20 +52,19 @@ describe('Logging Module', () => {
 					{ category: ['redis'], lowestLevel: 'debug', sinks: ['console'] },
 					{ category: ['pltgm'], lowestLevel: 'debug', sinks: ['console'] },
 					{ category: ['hono'], lowestLevel: 'debug', sinks: ['console'] },
-					{ category: ['cron'], lowestLevel: 'debug', sinks: ['console'] },
 					{ category: [], sinks: ['console'], lowestLevel: 'error' },
 				],
 			});
 		});
 
-		it('should configure loggers for different categories', async () => {
+		it('configures loggers for different categories', async () => {
 			const { initLogging } = await import('../core/logging/logging.ts');
 
 			await initLogging();
 
 			const config = mockConfigure.mock.calls[0][0];
 
-			expect(config.loggers).toHaveLength(5);
+			expect(config.loggers).toHaveLength(4);
 		});
 	});
 });

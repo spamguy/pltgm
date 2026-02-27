@@ -20,12 +20,18 @@ export default class DictionaryService {
 		logger.info('Words file loaded from {path}', { path: this.WORDS_PATH });
 
 		let lineNum = 0;
-		for await (const line of lineInterface) {
-			lineNum++;
-			if (lineNum % 10000 === 0) {
-				logger.debug('{ lineNum } words ({ line })...', { lineNum, line });
+		try {
+			for await (const line of lineInterface) {
+				lineNum++;
+				if (lineNum % 100 === 0) {
+					process.stdout.write(`${lineNum} words loaded (${line.substring(0, 3)})...\r`);
+					// logger.debug('{ lineNum } words ({ line })...', { lineNum, line });
+				}
+				await this.processWord(line);
 			}
-			await this.processWord(line);
+		} catch (err: unknown) {
+			// The queue will be drained faster than Redis can process, resulting in this error.
+			if ((err as NodeJS.ErrnoException)?.code !== 'ERR_USE_AFTER_CLOSE') throw err;
 		}
 		const t1 = performance.now();
 

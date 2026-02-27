@@ -3,6 +3,7 @@ import { SOCKETS } from '#common/constants';
 import { socket } from '@/sockets';
 import { useGameStore } from '@/store/game';
 import { computed, ref } from 'vue';
+import LicensePlate from './LicensePlate.vue';
 
 const gameStore = useGameStore();
 const wordGuess = ref('');
@@ -27,7 +28,7 @@ function checkWord() {
 
 <template>
 	<div v-if="gameStore.game">
-		<h1>{{ gameStore.game.text }}</h1>
+		<LicensePlate :height="300"></LicensePlate>
 
 		<h2>{{ formattedTimer }}</h2>
 
@@ -41,7 +42,7 @@ function checkWord() {
 	</div>
 </template>
 
-<style>
+<style lang="css">
 .guess-result {
 	animation: fade;
 }

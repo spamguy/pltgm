@@ -13,7 +13,6 @@ export async function initLogging() {
 			{ category: ['redis'], lowestLevel: 'debug', sinks: ['console'] },
 			{ category: ['pltgm'], lowestLevel: 'debug', sinks: ['console'] },
 			{ category: ['hono'], lowestLevel: 'debug', sinks: ['console'] },
-			{ category: ['cron'], lowestLevel: 'debug', sinks: ['console'] },
 			{ category: [], sinks: ['console'], lowestLevel: 'error' },
 		],
 	});
