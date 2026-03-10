@@ -66,7 +66,7 @@ export const useGameStore = defineStore('game', {
 			});
 
 			socket.on(SOCKETS.GAME_END, () => {
-				this.timer = 0;
+				this.game = null;
 			});
 		},
 		async startGame() {

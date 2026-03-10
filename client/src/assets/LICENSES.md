@@ -17,6 +17,7 @@ This document aims to provide attribution and correct licensing to all content u
 
 ## Plates
 
-| Plate                                                                        | Included? | Notes                            |
-| ---------------------------------------------------------------------------- | :-------: | -------------------------------- |
-| [CA](https://www.vecteezy.com/vector-art/8099837-vehicle-registration-plate) |    ❌     | © Maksim Grebeshkov. No license. |
+| Plate                                                                        | Included? | Notes                                          |
+| ---------------------------------------------------------------------------- | :-------: | ---------------------------------------------- |
+| [CA](https://www.vecteezy.com/vector-art/8099837-vehicle-registration-plate) |    ❌     | © Maksim Grebeshkov. No license.               |
+| WA                                                                           |    ✅     | Shitty Claude reproduction effort. No license. |

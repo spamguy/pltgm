@@ -28,7 +28,7 @@ function checkWord() {
 
 <template>
 	<div v-if="gameStore.game">
-		<LicensePlate></LicensePlate>
+		<LicensePlate :height="300"></LicensePlate>
 
 		<h2>{{ formattedTimer }}</h2>
 
@@ -42,7 +42,7 @@ function checkWord() {
 	</div>
 </template>
 
-<style>
+<style lang="css">
 .guess-result {
 	animation: fade;
 }
