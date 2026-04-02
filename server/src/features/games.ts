@@ -1,11 +1,10 @@
 import { PLATE_FORMAT_DICT, SOCKETS } from '#common/constants';
 import { generateRandomAlphanumeric, generateRandomNumber } from '#common/helpers';
-import { JorbsService } from '#services/jorbs.service';
 import { getLogger } from '@logtape/logtape';
 import { nanoid } from 'nanoid';
 import { Socket } from 'socket.io';
 import { setInterval } from 'timers/promises';
-import { PlateOriginsList, type Game, type PlateOrigin } from '../common/types.ts';
+import { PlateOriginsList, type Game } from '../common/types.ts';
 import { GameService } from '../shared/services/game.service.ts';
 
 const logger = getLogger('pltgm');
@@ -23,9 +22,9 @@ function registerGameHandlers(s: Socket): Socket {
 
 async function createGame() {
 	try {
-		const triplet = await JorbsService.getCurrentTriplet();
 		const origin = PlateOriginsList[generateRandomNumber(1, PlateOriginsList.length) - 1];
-		const text = await generatePlateText(origin, triplet.split(''));
+		const text = generateRandomAlphanumeric(PLATE_FORMAT_DICT[origin]);
+		const triplet = text.replaceAll(/\d/g, '');
 		const game: Game = {
 			id: '',
 			createTime: Date.now(),
@@ -67,10 +66,6 @@ async function createGame() {
 	} catch (ex) {
 		logger.error(ex as Error);
 	}
-}
-
-function generatePlateText(origin: PlateOrigin, values: string[]): string {
-	return generateRandomAlphanumeric(PLATE_FORMAT_DICT[origin], values);
 }
 
 /* #endregion */

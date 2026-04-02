@@ -7,9 +7,9 @@ import { mount, VueWrapper } from '@vue/test-utils';
 describe('App', () => {
 	let wrapper: VueWrapper;
 
-	it('renders the New Game component when no game is loaded', () => {
+	it('renders the New Game component when the timer is not running', () => {
 		wrapper = buildWrapper();
-		expect(wrapper.text()).toBe('hi there');
+		expect(wrapper.text()).toBe('hi thereround started');
 	});
 
 	it('renders the Round Player component when a game is loaded', () => {

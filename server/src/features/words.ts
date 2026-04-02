@@ -1,6 +1,6 @@
 import { SOCKETS } from '#common/constants';
 import type { SocketCallback, WordCheckParams, WordCheckResult } from '#common/types';
-import DictionaryService from '#services/dictionary.service';
+import { DictionaryService } from '#services/dictionary.service';
 import { GameService } from '#services/game.service';
 import { WordService } from '#services/word.service';
 import { getLogger } from '@logtape/logtape';
