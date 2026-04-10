@@ -16,15 +16,32 @@ async function initRedis() {
 		logger.error(error.message || 'No response from Redis server');
 	});
 
-	client.connect();
+	await client.connect();
 
-	testConnection();
+	await testConnection();
 }
 
-async function testConnection() {
-	const response = await client.ping();
-
-	assert(response, 'PONG');
+async function testConnection(retries = 20, delayMs = 500) {
+	for (let i = 0; i < retries; i++) {
+		try {
+			const response = await client.ping();
+			assert(response, 'PONG');
+			return;
+		} catch (ex: unknown) {
+			const err = ex as Error;
+			if (err?.message?.includes('LOADING')) {
+				logger.warn('Redis is loading dataset, retrying in {delayMs}ms... ({i}/{retries})', {
+					delayMs,
+					i: i + 1,
+					retries,
+				});
+				await new Promise((resolve) => setTimeout(resolve, delayMs));
+			} else {
+				throw err;
+			}
+		}
+	}
+	throw new Error('Redis did not finish loading after maximum retries');
 }
 
 export { client, initRedis };

@@ -8,7 +8,8 @@
 		"#integrations/*": "./src/integrations/*.ts"
 	},
 	"scripts": {
-		"dev": "GAME_INTERVAL=60 tsx watch --include ./src ./src/index.ts",
+		"mock": "MOCK_TEXT=6ING123 MOCK_STATE=CA npm run dev",
+		"dev": "tsx watch --include ./src ./src/index.ts",
 		"build": "tsc",
 		"start": "node dist/index.js",
 		"test": "vitest",
@@ -18,11 +19,11 @@
 		"lint": "npm run eslint && npm run check-types"
 	},
 	"dependencies": {
-		"@hono/node-server": "1.19.13",
+		"@hono/node-server": "2.0.0",
 		"@logtape/hono": "2.0.2",
 		"@logtape/logtape": "2.0.2",
 		"date-fns": "4.1.0",
-		"hono": "4.12.12",
+		"hono": "4.12.15",
 		"nanoid": "5.1.6",
 		"redis": "5.10.0",
 		"socket.io": "4.8.3"

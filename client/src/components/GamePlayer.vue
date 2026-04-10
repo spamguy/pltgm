@@ -1,18 +1,34 @@
 <script setup lang="ts">
-import { SOCKETS } from '#common/constants';
+import { SOCKETS, WORD_CHECK_RESULT_MESSAGES } from '#common/constants';
 import { socket } from '@/sockets';
 import { useGameStore } from '@/store/game';
-import { computed, ref } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import LicensePlate from './LicensePlate.vue';
 
 const gameStore = useGameStore();
 const wordGuess = ref('');
 const guessResult = ref('');
+const resultKey = ref(0);
 const formattedTimer = computed(() => {
 	const seconds = (gameStore.timer / 1000).toFixed(1);
 
 	return `${seconds} seconds`;
 });
+
+watch(
+	() => gameStore.results.length,
+	() => {
+		const latest = gameStore.results[gameStore.results.length - 1];
+		if (!latest) return;
+		// Force the animation to restart by toggling the element off then on.
+		guessResult.value = '';
+		nextTick(() => {
+			guessResult.value = WORD_CHECK_RESULT_MESSAGES[latest[1]];
+			resultKey.value++;
+			wordGuess.value = '';
+		});
+	},
+);
 
 function checkWord() {
 	if (!gameStore.game || !wordGuess.value) {
@@ -32,29 +48,31 @@ function checkWord() {
 
 		<h2>{{ formattedTimer }}</h2>
 
-		<input type="text" v-model="wordGuess" /> <input type="submit" @click="checkWord()" />
+		<form @submit.prevent="checkWord()">
+			<input type="text" v-model="wordGuess" />
+			<input type="submit" />
+		</form>
 
 		<div>Score: {{ gameStore.game.score }}</div>
-		<div :class="{ 'guess-result': guessResult }">
-			<span v-if="guessResult">{{ guessResult }}</span>
-		</div>
+		<div v-if="guessResult" :key="resultKey" class="guess-result">{{ guessResult }}</div>
 		<span v-if="gameStore.game.endTime">Round over</span>
 	</div>
 </template>
 
 <style lang="css">
 .guess-result {
-	animation: fade;
+	animation: fade 1.4s forwards;
 }
 
 @keyframes fade {
 	0% {
 		opacity: 1;
-		visibility: visible;
+	}
+	71% {
+		opacity: 1;
 	}
 	100% {
 		opacity: 0;
-		visibility: hidden;
 	}
 }
 </style>

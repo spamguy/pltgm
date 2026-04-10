@@ -27,5 +27,11 @@ export default defineConfig({
 	server: {
 		host: true,
 		port: +(process.env.VITE_CLIENT_PORT || 5174),
+		proxy: {
+			'/ws': {
+				target: process.env.VITE_SERVER_INTERNAL_URL || 'http://localhost:3001',
+				ws: true,
+			},
+		},
 	},
 });

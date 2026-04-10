@@ -1,10 +1,12 @@
+import { getLogger } from '@logtape/logtape';
+import type { Socket } from 'socket.io';
+
 import { SOCKETS } from '#common/constants';
 import type { SocketCallback, WordCheckParams, WordCheckResult } from '#common/types';
 import DictionaryService from '#services/dictionary.service';
 import { GameService } from '#services/game.service';
+import TimerService from '#services/timer.service';
 import { WordService } from '#services/word.service';
-import { getLogger } from '@logtape/logtape';
-import type { Socket } from 'socket.io';
 
 const logger = getLogger('pltgm');
 
@@ -46,6 +48,11 @@ async function checkWord({ gameId, word }: WordCheckParams): Promise<void> {
 				logger.debug('{word} for {text}: OK!', { word, text: game.text });
 				await GameService.updateScore(gameId, game.score + 1);
 				socket.emit(SOCKETS.GAME_SCORE, game.score + 1);
+				const bonusSeconds = 10;
+				const remaining = TimerService.addTime(gameId, bonusSeconds);
+				if (remaining !== null) {
+					socket.emit(SOCKETS.GAME_PING, remaining);
+				}
 			} else {
 				logger.debug(`{word} for {text}: Already tried`, { word, text: game.text });
 			}

@@ -35,4 +35,10 @@ export type WordCheckParams = {
 	word: string;
 };
 
+// Reflects Redis naming convention.
+export type HighScore = {
+	value: string;
+	score: number;
+};
+
 // #endregion

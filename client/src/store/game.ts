@@ -25,7 +25,8 @@ export const useGameStore = defineStore('game', {
 			});
 
 			socket.on(SOCKETS.GAME_START, () => {
-				this.timer = 30000;
+				// TODO: Have server set initial time.
+				this.timer = 60000;
 
 				const { pause } = useIntervalFn(
 					() => {
@@ -65,8 +66,10 @@ export const useGameStore = defineStore('game', {
 				this.timer = newTimer + latency;
 			});
 
-			socket.on(SOCKETS.GAME_END, () => {
-				this.game = null;
+			socket.on(SOCKETS.GAME_END, (endTime) => {
+				if (this.game) {
+					this.game.endTime = endTime;
+				}
 			});
 		},
 		async startGame() {

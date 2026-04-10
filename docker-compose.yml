@@ -15,12 +15,12 @@ services:
 
   server:
     environment:
-      - REDIS_HOST=${REDIS_HOST}
-      - REDIS_PORT=${REDIS_PORT}
-      - SERVER_PORT=${SERVER_PORT}
-      - CLIENT_PORT=${CLIENT_PORT}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - SERVER_PORT=${SERVER_PORT:-3001}
+      - CLIENT_PORT=${CLIENT_PORT:-5174}
     ports:
-      - "3000:3000"
+      - "${SERVER_PORT:-3001}:${SERVER_PORT:-3001}"
     build:
       context: server
       dockerfile: Dockerfile
@@ -33,8 +33,8 @@ services:
 
   client:
     environment:
-      - VITE_SERVER_URL=${SERVER_HOST}:${SERVER_PORT}
-      - VITE_CLIENT_PORT=${CLIENT_PORT}
+      - VITE_SERVER_INTERNAL_URL=${SERVER_INTERNAL_URL:-http://server:3001}
+      - VITE_CLIENT_PORT=${CLIENT_PORT:-5174}
     depends_on:
       - server
     ports:

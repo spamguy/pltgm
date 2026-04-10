@@ -3,7 +3,7 @@
 import { type Context } from 'hono';
 import { Server as SocketIOServer } from 'socket.io';
 import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
-import ioMiddleware, { initWebsocket } from '../shared/middleware/sockets.ts';
+import ioMiddleware, { initWebsocket } from '../../shared/middleware/sockets.ts';
 
 // Mock socket.io.
 vi.mock('socket.io', () => {

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import GameOutcome from '@/components/GameOutcome.vue';
 import GamePlayer from '@/components/GamePlayer.vue';
 import NewGame from '@/components/NewGame.vue';
 import { socket } from '@/sockets';
@@ -13,8 +14,9 @@ store.setupSockets();
 
 <template>
 	<div>
-		<NewGame v-if="store.timer <= 0"></NewGame>
-		<GamePlayer></GamePlayer>
+		<NewGame v-if="!store.game"></NewGame>
+		<GamePlayer v-else-if="!store.game.endTime"></GamePlayer>
+		<GameOutcome v-else></GameOutcome>
 	</div>
 </template>
 

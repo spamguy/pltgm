@@ -7,13 +7,15 @@ export const state = reactive({
 	barEvents: [],
 });
 
-// 'undefined' means the URL will be computed from the window.location object.
-const defaultUrl = import.meta.env.VITE_SERVER_URL || 'http://localhost:3001';
-const URL = import.meta.env.PROD ? undefined : defaultUrl;
+// Use VITE_SERVER_URL if explicitly set (direct connection, needs server CORS configured).
+// Otherwise use undefined so socket.io connects to window.location, letting the Vite
+// proxy (or production reverse proxy) forward /ws to the server.
+const URL = import.meta.env.VITE_SERVER_URL || undefined;
 
 export const socket = io(URL, {
 	path: '/ws',
 	autoConnect: true,
+	transports: ['websocket'],
 });
 
 socket.on('connect', () => {
