@@ -1,16 +1,30 @@
+# Build context must be the project root so server/src/common is accessible.
+
 # Use Bun only for installation (preserves bun.lock).
 FROM oven/bun:1.3-alpine AS install
 RUN mkdir -p /temp/dev
-COPY package.json bun.lock /temp/dev/
+COPY client/package.json client/bun.lock /temp/dev/
 RUN cd /temp/dev && bun install --frozen-lockfile
 
-FROM node:24-alpine
+# Dev: use Node for Vite dev server.
+# Bun's net.Socket doesn't implement destroySoon(), which Vite's WS proxy requires.
+# See: https://github.com/oven-sh/bun/issues/24127
+FROM node:24-alpine AS dev
 WORKDIR /app
 COPY --from=install /temp/dev/node_modules node_modules
-COPY package.json vite.config.ts index.html .
-
-# Bun's net.Socket doesn't implement destroySoon(), which Vite's WS proxy requires.
-# Use Node runtime until this is fixed.
-# See: https://github.com/oven-sh/bun/issues/24127
-
+COPY client/package.json client/vite.config.ts client/index.html .
 ENTRYPOINT ["node", "node_modules/.bin/vite"]
+
+FROM oven/bun:1.3-alpine AS build
+WORKDIR /app
+COPY --from=install /temp/dev/node_modules node_modules
+COPY client/ .
+# Matches the #common alias: ../server/src/common relative to /app/vite.config.ts → /server/src/common
+COPY server/src/common /server/src/common
+RUN chown -R bun:bun .
+USER bun
+RUN bun run build-only
+
+FROM nginx:alpine AS prod
+COPY --from=build /app/dist /usr/share/nginx/html
+COPY client/nginx.conf /etc/nginx/conf.d/default.conf

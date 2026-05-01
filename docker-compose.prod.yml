@@ -1,14 +1,11 @@
 services:
   redis:
-    image: redis/redis-stack:7.4.0-v7
+    image: redis:7-alpine
     container_name: redis
-    ports:
-      - "6379:6379"
-      - "8001:8001" # Insight
     healthcheck:
       test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
     volumes:
-      - redis_data:/data
+      - redis_prod_data:/data
       - ./server/redis.conf:/usr/local/etc/redis/redis.conf
     networks:
       - pltgm-network
@@ -18,40 +15,30 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - SERVER_PORT=${SERVER_PORT:-3001}
-      - CLIENT_PORT=${CLIENT_PORT:-5174}
-    ports:
-      - "${SERVER_PORT:-3001}:${SERVER_PORT:-3001}"
     build:
       context: server
       dockerfile: Dockerfile
-      target: dev
+      target: prod
     depends_on:
-      - redis
-    volumes:
-      - ./server/src:/app/src
+      redis:
+        condition: service_healthy
     networks:
       - pltgm-network
 
   client:
-    environment:
-      - VITE_SERVER_INTERNAL_URL=${SERVER_INTERNAL_URL:-http://server:3001}
-      - VITE_CLIENT_PORT=${CLIENT_PORT:-5174}
-    depends_on:
-      - server
     ports:
-      - "5174:5174"
+      - "80:80"
     build:
       context: .
       dockerfile: client/Dockerfile
-      target: dev
-    volumes:
-      - ./client/src:/app/src
-      - ./server/src/common:/server/src/common
+      target: prod
+    depends_on:
+      - server
     networks:
       - pltgm-network
 
 volumes:
-  redis_data:
+  redis_prod_data:
 
 networks:
   pltgm-network:
