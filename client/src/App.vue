@@ -15,7 +15,7 @@ store.setupSockets();
 <template>
 	<div>
 		<NewGame v-if="!store.game"></NewGame>
-		<GamePlayer v-else-if="!store.game.endTime"></GamePlayer>
+		<GamePlayer v-else-if="!store.game.endedAt"></GamePlayer>
 		<GameOutcome v-else></GameOutcome>
 	</div>
 </template>

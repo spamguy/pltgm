@@ -1,31 +1,20 @@
 services:
-  redis:
-    image: redis:7-alpine
-    container_name: redis
-    healthcheck:
-      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
-    volumes:
-      - redis_prod_data:/data
-      - ./server/redis.conf:/usr/local/etc/redis/redis.conf
-    networks:
-      - pltgm-network
-
   server:
+    image: ghcr.io/spamguy/pltgm-server:${TAG:-latest}
     environment:
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
       - SERVER_PORT=${SERVER_PORT:-3001}
+      - DB_PATH=${DB_PATH:-/data/pltgm.db}
     build:
       context: server
       dockerfile: Dockerfile
       target: prod
-    depends_on:
-      redis:
-        condition: service_healthy
+    volumes:
+      - sqlite_data:/data
     networks:
       - pltgm-network
 
   client:
+    image: ghcr.io/spamguy/pltgm-client:${TAG:-latest}
     ports:
       - "80:80"
     build:
@@ -38,7 +27,8 @@ services:
       - pltgm-network
 
 volumes:
-  redis_prod_data:
+  sqlite_data:
+    driver: local
 
 networks:
   pltgm-network:

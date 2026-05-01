@@ -8,19 +8,17 @@ const props = defineProps({
 	text: String,
 });
 const gameStore = useGameStore();
-const platePath = computed(() => {
-	return `../src/assets/plates/${props.origin?.toLowerCase() || gameStore.game?.origin.toLowerCase()}.jpg`;
+const origin = props.origin?.toLowerCase() || gameStore.game?.origin.toLowerCase();
+const originUrl = computed(() => {
+	return new URL(`../assets/plates/${origin}.jpg`, import.meta.url).href;
 });
 const heightCssValue = computed(() => `${props.height}px`);
 </script>
 
 <template>
-	<div
-		class="base-plate"
-		:class="props.origin?.toLowerCase() || gameStore.game?.origin.toLowerCase()"
-	>
-		<img :src="platePath" />
-		<span class="plate-text">{{ props.text || gameStore.game?.text }}</span>
+	<div class="base-plate" :class="origin">
+		<img :src="originUrl" />
+		<span class="plate-text">{{ props.text || gameStore.game?.plateText }}</span>
 	</div>
 </template>
 

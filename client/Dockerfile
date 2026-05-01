@@ -12,7 +12,7 @@ RUN cd /temp/dev && bun install --frozen-lockfile
 FROM node:24-alpine AS dev
 WORKDIR /app
 COPY --from=install /temp/dev/node_modules node_modules
-COPY client/package.json client/vite.config.ts client/index.html .
+COPY client/package.json client/vite.config.ts client/index.html ./
 ENTRYPOINT ["node", "node_modules/.bin/vite"]
 
 FROM oven/bun:1.3-alpine AS build

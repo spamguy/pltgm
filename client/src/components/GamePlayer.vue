@@ -55,7 +55,7 @@ function checkWord() {
 
 		<div>Score: {{ gameStore.game.score }}</div>
 		<div v-if="guessResult" :key="resultKey" class="guess-result">{{ guessResult }}</div>
-		<span v-if="gameStore.game.endTime">Round over</span>
+		<span v-if="gameStore.game.endedAt">Round over</span>
 	</div>
 </template>
 

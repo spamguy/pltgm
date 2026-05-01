@@ -68,7 +68,7 @@ export const useGameStore = defineStore('game', {
 
 			socket.on(SOCKETS.GAME_END, (endTime) => {
 				if (this.game) {
-					this.game.endTime = endTime;
+					this.game.endedAt = endTime;
 				}
 			});
 		},

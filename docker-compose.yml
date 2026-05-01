@@ -1,34 +1,18 @@
 services:
-  redis:
-    image: redis/redis-stack:7.4.0-v7
-    container_name: redis
-    ports:
-      - "6379:6379"
-      - "8001:8001" # Insight
-    healthcheck:
-      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
-    volumes:
-      - redis_data:/data
-      - ./server/redis.conf:/usr/local/etc/redis/redis.conf
-    networks:
-      - pltgm-network
-
   server:
     environment:
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
       - SERVER_PORT=${SERVER_PORT:-3001}
       - CLIENT_PORT=${CLIENT_PORT:-5174}
+      - DB_PATH=${DB_PATH:-/data/pltgm.db}
     ports:
       - "${SERVER_PORT:-3001}:${SERVER_PORT:-3001}"
     build:
       context: server
       dockerfile: Dockerfile
       target: dev
-    depends_on:
-      - redis
     volumes:
       - ./server/src:/app/src
+      - sqlite_data:/data
     networks:
       - pltgm-network
 
@@ -51,7 +35,8 @@ services:
       - pltgm-network
 
 volumes:
-  redis_data:
+  sqlite_data:
+    driver: local
 
 networks:
   pltgm-network:

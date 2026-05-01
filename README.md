@@ -23,17 +23,17 @@ Given the Washington license plate `TEN8646`:
 
 ## Technical
 
-This app uses a Vue frontend, a Node web server, and a Redis store for dictionary referencing and game data.
+This app uses a Vue frontend, a Node web server, and a sqlite3 store for dictionary referencing and game data.
 
 Contributions are welcome! File a ticket if one doesn't exist already and get going on a PR.
 
 ### Prerequisites
 
-- A line delimited word list named `english-words.txt` must be present in `server/assets`. No, I will not give you the one I use.
+- A line delimited word list named `english-words.txt` must be present in `server/assets`. No, don't ask for the one used on production.
 
 ### Setup (Docker)
 
-TODO. Currently broken.
+1. In the repo root directory, run `docker compose up`.
 
 ### Setup (Semi-Dockerless)
 

@@ -3,10 +3,9 @@ import { honoLogger } from '@logtape/hono';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 
+import { initDatabase } from '#integrations/sqlite';
 import DictionaryService from '#services/dictionary.service';
-import { getLogger } from '@logtape/logtape';
 import { initLogging, logOnError } from './core/logging/logging.ts';
-import { initRedis } from './integrations/db/redis.ts';
 import ioMiddleware, { initWebsocket } from './shared/middleware/sockets.ts';
 
 const app = new Hono();
@@ -35,15 +34,11 @@ try {
 	initWebsocket(server);
 	app.use(ioMiddleware);
 
-	// Redis init
-	await initRedis();
+	// SQLite init
+	initDatabase();
 
 	// Dictionary init
-	if (process.env.REBUILD_DICT) {
-		await DictionaryService.initDictionary();
-	} else {
-		getLogger('pltgm').info('Skipping dictionary rebuild');
-	}
+	await DictionaryService.initDictionary();
 } catch (ex) {
 	console.error(ex);
 }

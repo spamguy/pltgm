@@ -48,7 +48,6 @@ describe('Game features', () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
-		vi.mocked(GameService.gameExists).mockResolvedValue(false);
 		vi.mocked(GameService.saveGame).mockResolvedValue(undefined);
 		vi.mocked(GameService.endGame).mockResolvedValue(config.END_TIME);
 		vi.mocked(setInterval).mockReturnValue(
@@ -113,18 +112,6 @@ describe('Game features', () => {
 			expect(GameService.saveGame).toHaveBeenCalledWith(
 				expect.objectContaining({ text: 'ZQR4567', triplet: 'ZQR' }),
 			);
-		});
-
-		it('retries ID generation until a unique game ID is found', async () => {
-			vi.mocked(GameService.gameExists)
-				.mockResolvedValueOnce(true)
-				.mockResolvedValueOnce(true)
-				.mockResolvedValueOnce(false);
-
-			await invokeCreateGame();
-
-			expect(GameService.gameExists).toHaveBeenCalledTimes(3);
-			expect(GameService.saveGame).toHaveBeenCalledTimes(1);
 		});
 
 		it('emits GAME_CREATED with the new game', async () => {

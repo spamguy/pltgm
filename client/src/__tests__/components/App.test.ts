@@ -16,10 +16,10 @@ describe('App', () => {
 		wrapper = buildWrapper({
 			game: {
 				id: 'abc',
-				createTime: Date.now(),
+				startedAt: new Date(),
 				score: 0,
 				triplet: 'aaa',
-				text: 'aaa',
+				plateText: 'aaa',
 				origin: 'CA',
 			},
 			timer: 30000,

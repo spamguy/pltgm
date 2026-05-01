@@ -1,50 +1,66 @@
+import {
+	CHECK_GUESS,
+	GET_GAME,
+	INSERT_GAME,
+	INSERT_GUESS,
+	UPDATE_GAME_END,
+	UPDATE_GAME_SCORE,
+} from '#common/queries';
+import { type DbGame, type Game, type WordCheckResult } from '#common/types';
+import { client } from '#integrations/sqlite';
 import { getLogger } from '@logtape/logtape';
-import { type Game, type PlateOrigin } from '../../common/types.ts';
-import { client } from '../../integrations/db/redis.ts';
-import { ExpirableService } from './expirable.service.ts';
+import type { SnakeCasedProperties } from 'type-fest';
 
 const logger = getLogger('pltgm');
 
-export class GameService extends ExpirableService {
-	static async gameExists(game: Game): Promise<boolean> {
-		return (await client.exists(this.keyForGame(game))) > 0;
+export class GameService {
+	static saveGame(game: DbGame): Game {
+		client.prepare(INSERT_GAME).run(game);
+
+		const gOut = this.getGame(game.id);
+		if (!gOut) {
+			throw new Error(`Game ${game.id} not found in database after creation`);
+		}
+
+		return gOut;
 	}
 
-	static async saveGame(game: Game): Promise<void> {
-		await client.hSet(this.keyForGame(game), game);
-		await this.setTtlForKey(this.keyForGame(game));
+	static endGame(id: string): void {
+		client.prepare(UPDATE_GAME_END).run({ id });
 	}
 
-	static async endGame(gameId: string): Promise<number> {
-		const endTime = Date.now();
-		await client.hSet(this.keyForGame(gameId), 'endTime', endTime);
-		return endTime;
-	}
+	static getGame(id: string): Game | null {
+		const row = client.prepare(GET_GAME).get({ id }) as SnakeCasedProperties<Game> | null;
+		if (!row) {
+			return null;
+		}
 
-	static async getGame(gameId: string): Promise<Game | null> {
-		const { id, createdTime, startTime, endTime, score, triplet, text, origin } =
-			await client.hGetAll(this.keyForGame(gameId));
-
+		const { started_at, ended_at, plate_text, ...game } = row;
 		return {
-			id,
-			createTime: +createdTime,
-			startTime: +startTime,
-			endTime: +endTime,
-			score: +score,
-			triplet,
-			text,
-			origin: origin as PlateOrigin,
+			...game,
+			plateText: plate_text,
+			startedAt: started_at,
+			endedAt: ended_at,
 		};
 	}
 
-	static async updateScore(gameId: string, newScore: number): Promise<void> {
-		logger.debug('New score for {gameId}: {newScore}', { gameId, newScore });
-		await client.hSet(this.keyForGame(gameId), 'score', newScore);
+	static updateScore(id: string, score: number): void {
+		logger.debug('New score for {id}: {score}', { id, score });
+		client.prepare(UPDATE_GAME_SCORE).run({ score, id });
 	}
 
-	private static keyForGame(game: Game | string): string {
-		if (typeof game === 'string') return `game:${game}`;
+	static isWordGuessed(id: string, guess: string): boolean {
+		return !!client.prepare(CHECK_GUESS).get({ id, guess });
+	}
 
-		return `game:${game.id}`;
+	static addGuess(id: string, guess: string): WordCheckResult {
+		// TODO: Needs deduping.
+		const result = client.prepare(INSERT_GUESS).run({ id, guess });
+
+		if (result.changes === 0) {
+			return 'already_tried';
+		}
+
+		return 'ok';
 	}
 }

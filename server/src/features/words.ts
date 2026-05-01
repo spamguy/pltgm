@@ -6,7 +6,6 @@ import type { SocketCallback, WordCheckParams, WordCheckResult } from '#common/t
 import DictionaryService from '#services/dictionary.service';
 import { GameService } from '#services/game.service';
 import TimerService from '#services/timer.service';
-import { WordService } from '#services/word.service';
 
 const logger = getLogger('pltgm');
 
@@ -20,17 +19,17 @@ function registerWordHandlers(s: Socket): Socket {
 }
 
 async function checkWord({ gameId, word }: WordCheckParams): Promise<void> {
-	const game = await GameService.getGame(gameId);
+	const game = GameService.getGame(gameId);
 
 	try {
 		if (!game) {
 			throw new Error('This game does not exist.');
 		}
 
-		const isWord = await DictionaryService.checkWord(word, game.triplet);
-		let wordStatus: WordCheckResult;
+		const isWord = DictionaryService.checkWord(word, game.triplet);
+		let wordStatus: WordCheckResult = 'ok';
 
-		if (game.endTime) {
+		if (game.endedAt) {
 			logger.warn(`Attempt to guess {word} for game ${gameId} after round ended`);
 			socket.emit(SOCKETS.WORD_CHECK_RESULT, 'round_ended');
 			return;
@@ -40,22 +39,23 @@ async function checkWord({ gameId, word }: WordCheckParams): Promise<void> {
 			wordStatus = 'not_a_matching_word';
 			logger.debug(`{word} for {text}: Not a word or does not match text`, {
 				word,
-				text: game.text,
+				text: game.plateText,
 			});
-		} else {
-			wordStatus = await WordService.addWordForRound(gameId, word);
-			if (wordStatus === 'ok') {
-				logger.debug('{word} for {text}: OK!', { word, text: game.text });
-				await GameService.updateScore(gameId, game.score + 1);
-				socket.emit(SOCKETS.GAME_SCORE, game.score + 1);
-				const bonusSeconds = 10;
-				const remaining = TimerService.addTime(gameId, bonusSeconds);
-				if (remaining !== null) {
-					socket.emit(SOCKETS.GAME_PING, remaining);
-				}
-			} else {
-				logger.debug(`{word} for {text}: Already tried`, { word, text: game.text });
+		} else if (!GameService.isWordGuessed(game.id, word)) {
+			logger.debug('{word} for {text}: OK!', { word, text: game.plateText });
+			GameService.addGuess(gameId, word);
+			GameService.updateScore(gameId, game.score + 1);
+			socket.emit(SOCKETS.GAME_SCORE, game.score + 1);
+
+			// TODO: Reconsider or make dynamic based on triplet word count.
+			const bonusSeconds = 2;
+			const remaining = TimerService.addTime(gameId, bonusSeconds);
+			if (remaining !== null) {
+				socket.emit(SOCKETS.GAME_PING, remaining);
 			}
+		} else {
+			logger.debug(`{word} for {text}: Already tried`, { word, text: game.plateText });
+			wordStatus = 'already_tried';
 		}
 
 		socket.emit(SOCKETS.WORD_CHECK_RESULT, [word, wordStatus]);

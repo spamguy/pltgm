@@ -10,7 +10,7 @@ export async function initLogging() {
 			}),
 		},
 		loggers: [
-			{ category: ['redis'], lowestLevel: 'debug', sinks: ['console'] },
+			{ category: ['sqlite'], lowestLevel: 'debug', sinks: ['console'] },
 			{ category: ['pltgm'], lowestLevel: 'debug', sinks: ['console'] },
 			{ category: ['hono'], lowestLevel: 'debug', sinks: ['console'] },
 			{ category: [], sinks: ['console'], lowestLevel: 'error' },

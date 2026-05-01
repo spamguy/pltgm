@@ -26,3 +26,4 @@ lerna-debug.log*
 .DS_Store
 
 assets/
+data/

@@ -1,10 +1,14 @@
-import { client } from '#integrations/db/redis';
+import { CHECK_DICTIONARY, GET_WORDS_FOR_TRIPLET, INSERT_DICTIONARY_WORD } from '#common/queries';
+import type { ExistsResult } from '#common/types';
+import { client } from '#integrations/sqlite';
 import { getLogger } from '@logtape/logtape';
 import { createReadStream } from 'fs';
 import { resolve } from 'path';
 import { createInterface } from 'readline';
 
 const logger = getLogger('pltgm');
+
+const BATCH_SIZE = 1000;
 
 export default class DictionaryService {
 	private static readonly ASSETS_DIR = 'assets';
@@ -19,68 +23,48 @@ export default class DictionaryService {
 
 		logger.info('Words file loaded from {path}', { path: this.WORDS_PATH });
 
-		let lineNum = 0;
-		try {
-			for await (const line of lineInterface) {
-				lineNum++;
-				if (lineNum % 100 === 0) {
-					process.stdout.write(`${lineNum} words loaded (${line.substring(0, 3)})...\r`);
-					// logger.debug('{ lineNum } words ({ line })...', { lineNum, line });
-				}
-				await this.processWord(line);
+		const q = client.prepare(INSERT_DICTIONARY_WORD);
+		const insertBatch = client.transaction((batch: string[]) => {
+			for (const entry of batch) {
+				q.run({ word: entry });
 			}
-		} catch (err: unknown) {
-			// The queue will be drained faster than Redis can process, resulting in this error.
-			if ((err as NodeJS.ErrnoException)?.code !== 'ERR_USE_AFTER_CLOSE') throw err;
-		}
-		const t1 = performance.now();
+		});
 
+		let batch: string[] = [];
+
+		for await (const line of lineInterface) {
+			const word = line.trim().toLocaleLowerCase();
+			batch.push(word);
+			if (batch.length >= BATCH_SIZE) {
+				insertBatch(batch);
+				batch = [];
+			}
+		}
+
+		if (batch.length > 0) {
+			insertBatch(batch);
+		}
+
+		const t1 = performance.now();
 		logger.info('Dictionary loaded in {time} sec', { time: ((t1 - t0) / 1000).toFixed(2) });
 	}
 
-	static async getWordsForTriplet(triplet: string): Promise<string[]> {
-		return client.sMembers(`dict:${triplet.toLowerCase()}`) || [];
+	static getWordsForTriplet(triplet: string): string[] {
+		const q = client.prepare(GET_WORDS_FOR_TRIPLET);
+		return (q.all({ triplet: triplet.toLowerCase() }) as { word: string }[]).map((r) => r.word);
 	}
 
-	static async checkWord(testWord: string, triplet: string): Promise<boolean> {
-		return (await this.getWordsForTriplet(triplet)).includes(testWord.toLowerCase());
-	}
-
-	/* #region Private functions */
-
-	private static async storeWord(triplet: string, word: string): Promise<void> {
-		const result = await client.sAdd(`dict:${triplet}`, word);
-
-		if (result === 0) {
-			logger.warn('{word} already found in {triplet} bucket', { word, triplet });
-		}
-	}
-
-	private static async processWord(wordLine: string): Promise<void> {
-		const word = wordLine.trim().toLocaleLowerCase();
-		/*
-		 * Ignore:
-		 *   - too-short words
-		 *   - words containing accented chars
-		 */
-		if (word.length < 3 || word.match(/[^a-z]/)) {
-			return;
-		}
-
-		// TODO: Optimize.
-		const letterTriplets: string[] = [];
-		for (let p1 = 0; p1 < word.length - 2; p1++) {
-			for (let p2 = p1 + 1; p2 < word.length - 1; p2++) {
-				for (let p3 = p2 + 1; p3 < word.length; p3++) {
-					const triplet = word[p1].concat(word[p2], word[p3]);
-
-					if (!letterTriplets.includes(triplet)) {
-						letterTriplets.push(triplet);
-						await this.storeWord(triplet, word);
-					}
-				}
-			}
-		}
+	static checkWord(word: string, triplet: string): boolean {
+		const tripletFormat = `%${triplet.toLocaleLowerCase().split('').join('%')}%`;
+		logger.debug(
+			JSON.stringify(
+				client.prepare(CHECK_DICTIONARY).get({ word, triplet: tripletFormat }) as ExistsResult,
+			),
+		);
+		return (
+			(client.prepare(CHECK_DICTIONARY).get({ word, triplet: tripletFormat }) as ExistsResult)
+				.count > 0
+		);
 	}
 
 	/* #endregion */
