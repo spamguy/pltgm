@@ -2,9 +2,9 @@ import type { PlateOrigin, WordCheckResult } from './types.ts';
 
 export const PLATE_FORMAT_DICT: Record<PlateOrigin, string> = {
 	CA: 'NLLLNNN',
-	CO: 'LLLNNN',
-	OK: 'LLLNNN',
-	TX: 'LLLNNNN',
+	// CO: 'LLLNNN',
+	// OK: 'LLLNNN',
+	TX: 'LLL NNNN',
 	WA: 'LLLNNNN',
 };
 
@@ -16,6 +16,7 @@ export const SOCKETS = {
 	GAME_START: 'game:start',
 	GAME_PING: 'game:ping',
 	GAME_END: 'game:end',
+	GAME_ENDED: 'game:ended',
 	GAME_SCORE: 'game:score',
 	WORD_CHECK: 'word:check',
 	WORD_CHECK_RESULT: 'word:check:result',

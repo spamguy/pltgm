@@ -41,7 +41,7 @@ describe('Logging Module', () => {
 
 	describe('initLogging', () => {
 		it('configures logging with console sink', async () => {
-			const { initLogging } = await import('../core/logging/logging.ts');
+			const { initLogging } = await import('../core/logging.ts');
 
 			await initLogging();
 
@@ -58,7 +58,7 @@ describe('Logging Module', () => {
 		});
 
 		it('configures loggers for different categories', async () => {
-			const { initLogging } = await import('../core/logging/logging.ts');
+			const { initLogging } = await import('../core/logging.ts');
 
 			await initLogging();
 

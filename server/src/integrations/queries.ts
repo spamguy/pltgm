@@ -37,7 +37,7 @@ SELECT word
  WHERE word LIKE LOWER(@triplet)`;
 
 export const CHECK_DICTIONARY = `
-SELECT count(*) as count
+SELECT COUNT(*) as count
   FROM dictionary
  WHERE word = LOWER(@word)
    AND word LIKE LOWER(@triplet)

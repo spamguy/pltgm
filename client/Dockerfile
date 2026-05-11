@@ -17,11 +17,11 @@ ENTRYPOINT ["node", "node_modules/.bin/vite"]
 
 FROM oven/bun:1.3-alpine AS build
 WORKDIR /app
-COPY --from=install /temp/dev/node_modules node_modules
-COPY client/ .
+RUN chown -R bun:bun /app
+COPY --chown=bun:bun --from=install /temp/dev/node_modules node_modules
+COPY --chown=bun:bun client/ .
 # Matches the #common alias: ../server/src/common relative to /app/vite.config.ts → /server/src/common
-COPY server/src/common /server/src/common
-RUN chown -R bun:bun .
+COPY --chown=bun:bun server/src/common /server/src/common
 USER bun
 RUN bun run build-only
 

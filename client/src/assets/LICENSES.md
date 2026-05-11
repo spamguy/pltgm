@@ -9,11 +9,12 @@ To the best of my ability, I respect these properties' licenses:
 
 This document aims to provide attribution and correct licensing to all content used, included or not.
 
-## Fonts
+## Styling
 
-| Font                                                                | Included? | Notes                                 |
-| ------------------------------------------------------------------- | :-------: | ------------------------------------- |
-| [License Plate](https://www.fontspace.com/license-plate-font-f3359) |    ❌     | © 2005 Dave Hansen. Freeware license. |
+| Asset                                                                                  | Included? | Notes                                 |
+| -------------------------------------------------------------------------------------- | :-------: | ------------------------------------- |
+| [License Plate Font](https://www.fontspace.com/license-plate-font-f3359)               |    ❌     | © 2005 Dave Hansen. Freeware license. |
+| [Dark Tire Background](https://dribbble.com/shots/476436-4-Free-Patterns-for-download) |    ✅     | © Bastien Wilmotte.                   |
 
 ## Plates
 

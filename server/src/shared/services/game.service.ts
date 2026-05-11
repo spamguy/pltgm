@@ -1,3 +1,4 @@
+import { type DbGame, type Game, type WordCheckResult } from '#common/types';
 import {
 	CHECK_GUESS,
 	GET_GAME,
@@ -5,8 +6,7 @@ import {
 	INSERT_GUESS,
 	UPDATE_GAME_END,
 	UPDATE_GAME_SCORE,
-} from '#common/queries';
-import { type DbGame, type Game, type WordCheckResult } from '#common/types';
+} from '#integrations/queries';
 import { client } from '#integrations/sqlite';
 import { getLogger } from '@logtape/logtape';
 import type { SnakeCasedProperties } from 'type-fest';
@@ -25,8 +25,9 @@ export class GameService {
 		return gOut;
 	}
 
-	static endGame(id: string): void {
+	static endGame(id: string): number {
 		client.prepare(UPDATE_GAME_END).run({ id });
+		return Date.now();
 	}
 
 	static getGame(id: string): Game | null {

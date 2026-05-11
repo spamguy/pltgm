@@ -3,7 +3,6 @@ import { useGameStore } from '@/store/game';
 import { computed } from 'vue';
 
 const props = defineProps({
-	height: Number,
 	origin: String,
 	text: String,
 });
@@ -12,7 +11,6 @@ const origin = props.origin?.toLowerCase() || gameStore.game?.origin.toLowerCase
 const originUrl = computed(() => {
 	return new URL(`../assets/plates/${origin}.jpg`, import.meta.url).href;
 });
-const heightCssValue = computed(() => `${props.height}px`);
 </script>
 
 <template>
@@ -30,12 +28,14 @@ const heightCssValue = computed(() => `${props.height}px`);
 
 /* TODO: Refactor. This is gonna get real big, real fast. */
 .base-plate {
-	height: v-bind(heightCssValue);
-	text-align: center;
-	container-type: size;
+	height: 100%;
+	position: relative;
+	container-type: inline-size;
 
 	img {
-		height: 100%;
+		width: 100%;
+		height: auto;
+		display: block;
 	}
 
 	&.ca {
@@ -47,11 +47,12 @@ const heightCssValue = computed(() => `${props.height}px`);
 
 		.plate-text {
 			font-family: LicensePlate;
-			font-size: 65cqh;
+			font-size: 28cqw;
+			line-height: 1;
+			position: absolute;
+			inset: 25% 0 0 0;
 			display: flex;
 			align-items: center;
-			position: relative;
-			bottom: 70%;
 			justify-content: center;
 			color: #21175c;
 			text-shadow: -4px -3px 0 #fff;
@@ -61,14 +62,35 @@ const heightCssValue = computed(() => `${props.height}px`);
 	&.wa {
 		.plate-text {
 			font-family: LicensePlate;
-			font-size: 55cqh;
+			font-size: 17cqw;
+			line-height: 1;
+			position: absolute;
+			inset: 0;
 			display: flex;
 			align-items: center;
-			position: relative;
-			bottom: 77%;
 			justify-content: center;
 			color: #21175c;
 			text-shadow: -4px -3px 0 #ddd;
+		}
+	}
+
+	&.tx {
+		img {
+			border: 1px solid #999;
+			border-radius: 10px;
+		}
+
+		.plate-text {
+			font-family: LicensePlate;
+			color: black;
+			font-size: 26cqw;
+			line-height: 1;
+			position: absolute;
+			inset: 30px 10px 0 0;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			letter-spacing: -2px;
 		}
 	}
 }

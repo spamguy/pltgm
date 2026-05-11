@@ -23,6 +23,8 @@ client.pragma('foreign_keys = ON');
 process.on('exit', () => client.close());
 
 export function initDatabase() {
+	getLogger('sqlite').info('Using DB found at {dbPath}', { dbPath: resolve(dbPath) });
+
 	const relPath = resolve(dirname(fileURLToPath(import.meta.url)), '../scripts/migrate.sql');
 	const migration = readFileSync(relPath, 'utf8');
 	client.exec(migration);

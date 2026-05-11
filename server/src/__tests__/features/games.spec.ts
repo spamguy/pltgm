@@ -1,5 +1,5 @@
 import type { Socket } from 'socket.io';
-import { setInterval } from 'timers/promises';
+import { setTimeout as sleep } from 'timers/promises';
 import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
 import { SOCKETS } from '../../common/constants.ts';
 import { registerGameHandlers } from '../../features/games.ts';
@@ -20,15 +20,15 @@ vi.mock('@logtape/logtape', () => ({
 	getLogger: vi.fn(() => config.logger),
 }));
 
-vi.mock('nanoid', () => ({
-	nanoid: vi.fn().mockReturnValue(config.GAME_ID),
+vi.mock('crypto', () => ({
+	randomUUID: vi.fn().mockReturnValue(config.GAME_ID),
 }));
 
 vi.mock('../../shared/services/game.service.ts', () => ({
 	GameService: {
-		gameExists: vi.fn().mockResolvedValue(false),
-		saveGame: vi.fn().mockResolvedValue(undefined),
-		endGame: vi.fn().mockResolvedValue(config.END_TIME),
+		gameExists: vi.fn().mockReturnValue(false),
+		saveGame: vi.fn().mockReturnValue(undefined),
+		endGame: vi.fn().mockReturnValue(config.END_TIME),
 	},
 }));
 
@@ -40,7 +40,7 @@ vi.mock('../../shared/services/timer.service.ts', () => ({
 }));
 
 vi.mock('timers/promises', () => ({
-	setInterval: vi.fn(),
+	setTimeout: vi.fn(),
 }));
 
 describe('Game features', () => {
@@ -48,14 +48,11 @@ describe('Game features', () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
-		vi.mocked(GameService.saveGame).mockResolvedValue(undefined);
-		vi.mocked(GameService.endGame).mockResolvedValue(config.END_TIME);
-		vi.mocked(setInterval).mockReturnValue(
-			(async function* () {
-				yield* [];
-				return undefined;
-			})(),
-		);
+		vi.useFakeTimers();
+		vi.setSystemTime(1_000_000_000_000);
+		vi.mocked(sleep).mockImplementation(async () => {
+			vi.advanceTimersByTime(61_000);
+		});
 		mockSocket = { on: vi.fn(), emit: vi.fn() };
 	});
 
@@ -66,7 +63,7 @@ describe('Game features', () => {
 		delete process.env.GAME_LENGTH;
 	});
 
-	function invokeCreateGame(): Promise<void> {
+	function invokeCreateGame(): void {
 		registerGameHandlers(mockSocket as unknown as Socket);
 		const [, handler] = (mockSocket.on as Mock).mock.calls.find(
 			([event]) => event === SOCKETS.GAME_CREATE,
@@ -92,15 +89,14 @@ describe('Game features', () => {
 		});
 
 		it('saves a game with the expected structure', async () => {
-			await invokeCreateGame();
+			invokeCreateGame();
 
 			expect(GameService.saveGame).toHaveBeenCalledWith(
 				expect.objectContaining({
 					id: config.GAME_ID,
 					origin: 'CA',
-					text: 'ABC1234',
+					plateText: 'ABC1234',
 					triplet: 'ABC',
-					score: 0,
 				}),
 			);
 		});
@@ -110,7 +106,7 @@ describe('Game features', () => {
 			await invokeCreateGame();
 
 			expect(GameService.saveGame).toHaveBeenCalledWith(
-				expect.objectContaining({ text: 'ZQR4567', triplet: 'ZQR' }),
+				expect.objectContaining({ plateText: 'ZQR4567', triplet: 'ZQR' }),
 			);
 		});
 
@@ -119,7 +115,7 @@ describe('Game features', () => {
 
 			expect(mockSocket.emit).toHaveBeenCalledWith(
 				SOCKETS.GAME_CREATED,
-				expect.objectContaining({ id: config.GAME_ID, origin: 'CA', text: 'ABC1234' }),
+				expect.objectContaining({ id: config.GAME_ID, origin: 'CA', plateText: 'ABC1234' }),
 			);
 		});
 
@@ -143,14 +139,10 @@ describe('Game features', () => {
 		});
 
 		it('emits GAME_PING with remaining milliseconds each time the interval fires', async () => {
-			vi.useFakeTimers();
-			vi.setSystemTime(1_000_000_000_000);
-			vi.mocked(setInterval).mockReturnValue(
-				(async function* () {
-					yield null;
-					return undefined;
-				})(),
-			);
+			let calls = 0;
+			vi.mocked(sleep).mockImplementation(async () => {
+				if (++calls > 1) vi.advanceTimersByTime(61_000);
+			});
 
 			await invokeCreateGame();
 
@@ -158,10 +150,10 @@ describe('Game features', () => {
 			expect(mockSocket.emit).toHaveBeenCalledWith(SOCKETS.GAME_PING, 60_000);
 		});
 
-		it('emits GAME_END with the end timestamp after the round', async () => {
+		it('emits GAME_ENDED with the end timestamp after the round', async () => {
 			await invokeCreateGame();
 
-			expect(mockSocket.emit).toHaveBeenCalledWith(SOCKETS.GAME_END, config.END_TIME);
+			expect(mockSocket.emit).toHaveBeenCalledWith(SOCKETS.GAME_ENDED, config.END_TIME);
 		});
 
 		it('unregisters the game timer after the round ends', async () => {
@@ -172,7 +164,9 @@ describe('Game features', () => {
 
 		it('logs errors without propagating them', async () => {
 			const testError = new Error('Redis failure');
-			vi.mocked(GameService.saveGame).mockRejectedValueOnce(testError);
+			vi.mocked(GameService.saveGame).mockImplementationOnce(() => {
+				throw testError;
+			});
 
 			await expect(invokeCreateGame()).resolves.not.toThrow();
 			expect(config.logger.error).toHaveBeenCalledWith(testError);

@@ -1,5 +1,9 @@
-import { CHECK_DICTIONARY, GET_WORDS_FOR_TRIPLET, INSERT_DICTIONARY_WORD } from '#common/queries';
 import type { ExistsResult } from '#common/types';
+import {
+	CHECK_DICTIONARY,
+	GET_WORDS_FOR_TRIPLET,
+	INSERT_DICTIONARY_WORD,
+} from '#integrations/queries';
 import { client } from '#integrations/sqlite';
 import { getLogger } from '@logtape/logtape';
 import { createReadStream } from 'fs';
@@ -34,6 +38,9 @@ export default class DictionaryService {
 
 		for await (const line of lineInterface) {
 			const word = line.trim().toLocaleLowerCase();
+			if (!word) {
+				continue;
+			}
 			batch.push(word);
 			if (batch.length >= BATCH_SIZE) {
 				insertBatch(batch);
@@ -56,11 +63,6 @@ export default class DictionaryService {
 
 	static checkWord(word: string, triplet: string): boolean {
 		const tripletFormat = `%${triplet.toLocaleLowerCase().split('').join('%')}%`;
-		logger.debug(
-			JSON.stringify(
-				client.prepare(CHECK_DICTIONARY).get({ word, triplet: tripletFormat }) as ExistsResult,
-			),
-		);
 		return (
 			(client.prepare(CHECK_DICTIONARY).get({ word, triplet: tripletFormat }) as ExistsResult)
 				.count > 0

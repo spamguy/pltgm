@@ -1,78 +1,67 @@
 <script setup lang="ts">
-import { SOCKETS, WORD_CHECK_RESULT_MESSAGES } from '#common/constants';
-import { socket } from '@/sockets';
 import { useGameStore } from '@/store/game';
-import { computed, nextTick, ref, watch } from 'vue';
+import { computed } from 'vue';
+import GuessForm from './GuessForm.vue';
 import LicensePlate from './LicensePlate.vue';
+import ScoreCounter from './ScoreCounter.vue';
 
 const gameStore = useGameStore();
-const wordGuess = ref('');
-const guessResult = ref('');
-const resultKey = ref(0);
 const formattedTimer = computed(() => {
 	const seconds = (gameStore.timer / 1000).toFixed(1);
 
 	return `${seconds} seconds`;
 });
-
-watch(
-	() => gameStore.results.length,
-	() => {
-		const latest = gameStore.results[gameStore.results.length - 1];
-		if (!latest) return;
-		// Force the animation to restart by toggling the element off then on.
-		guessResult.value = '';
-		nextTick(() => {
-			guessResult.value = WORD_CHECK_RESULT_MESSAGES[latest[1]];
-			resultKey.value++;
-			wordGuess.value = '';
-		});
-	},
-);
-
-function checkWord() {
-	if (!gameStore.game || !wordGuess.value) {
-		return;
-	}
-
-	socket.emit(SOCKETS.WORD_CHECK, {
-		gameId: gameStore.game.id,
-		word: wordGuess.value,
-	});
-}
 </script>
 
 <template>
-	<div v-if="gameStore.game">
-		<LicensePlate :height="300"></LicensePlate>
+	<div v-if="gameStore.game" class="game-container">
+		<div class="plate-container embedded">
+			<LicensePlate></LicensePlate>
+		</div>
 
-		<h2>{{ formattedTimer }}</h2>
+		<div class="status-container embedded">
+			<h2 v-if="gameStore.timer > 0">{{ formattedTimer }}</h2>
 
-		<form @submit.prevent="checkWord()">
-			<input type="text" v-model="wordGuess" />
-			<input type="submit" />
-		</form>
-
-		<div>Score: {{ gameStore.game.score }}</div>
-		<div v-if="guessResult" :key="resultKey" class="guess-result">{{ guessResult }}</div>
-		<span v-if="gameStore.game.endedAt">Round over</span>
+			<ScoreCounter />
+		</div>
 	</div>
+
+	<GuessForm />
 </template>
 
 <style lang="css">
-.guess-result {
-	animation: fade 1.4s forwards;
-}
+.game-container {
+	display: flex;
+	flex-wrap: wrap;
+	container-type: inline-size;
+	width: 100%;
+	padding: 20px;
+	gap: 20px;
 
-@keyframes fade {
-	0% {
-		opacity: 1;
+	.status-container {
+		text-align: center;
+		flex: 1 0 0;
+		min-width: 0;
 	}
-	71% {
-		opacity: 1;
+
+	.plate-container {
+		flex: 1;
 	}
-	100% {
-		opacity: 0;
+
+	.embedded {
+		border-radius: 22px;
+		box-shadow:
+			inset 5px 5px 10px #141414,
+			inset -5px -5px 10px #303030;
+		padding: 20px;
+	}
+
+	@container (width < 900px) {
+		.plate-container,
+		.status-container {
+			flex: 0 0 100%;
+			max-width: none;
+		}
 	}
 }
 </style>

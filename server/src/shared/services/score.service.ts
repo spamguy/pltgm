@@ -1,5 +1,5 @@
-import { GET_TOP_TRIPLET_SCORES } from '#common/queries';
 import type { HighScore } from '#common/types';
+import { GET_TOP_TRIPLET_SCORES } from '#integrations/queries';
 import { client } from '#integrations/sqlite';
 
 /**

@@ -43,9 +43,11 @@ async function checkWord({ gameId, word }: WordCheckParams): Promise<void> {
 			});
 		} else if (!GameService.isWordGuessed(game.id, word)) {
 			logger.debug('{word} for {text}: OK!', { word, text: game.plateText });
+
+			const newScore = game.score + word.length;
 			GameService.addGuess(gameId, word);
-			GameService.updateScore(gameId, game.score + 1);
-			socket.emit(SOCKETS.GAME_SCORE, game.score + 1);
+			GameService.updateScore(gameId, newScore);
+			socket.emit(SOCKETS.GAME_SCORE, newScore);
 
 			// TODO: Reconsider or make dynamic based on triplet word count.
 			const bonusSeconds = 2;

@@ -5,7 +5,7 @@ import { cors } from 'hono/cors';
 
 import { initDatabase } from '#integrations/sqlite';
 import DictionaryService from '#services/dictionary.service';
-import { initLogging, logOnError } from './core/logging/logging.ts';
+import { initLogging, logOnError } from './core/logging.ts';
 import ioMiddleware, { initWebsocket } from './shared/middleware/sockets.ts';
 
 const app = new Hono();

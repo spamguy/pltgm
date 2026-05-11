@@ -19,7 +19,7 @@ Given the Washington license plate `TEN8646`:
 | bea**ten**              | en [*definitely* does not use all letters] |
 | effec**t**iv**en**ess   | benu**t**z**en** [not an English word]     |
 | effec**t**iv**en**esses | dé**ten**te [rewrite as *detente*]         |
-|                         | Tencent [proper noun]                      |
+|                         | **Ten**cent [proper noun]                  |
 
 ## Technical
 
@@ -29,20 +29,18 @@ Contributions are welcome! File a ticket if one doesn't exist already and get go
 
 ### Prerequisites
 
-- A line delimited word list named `english-words.txt` must be present in `server/assets`. No, don't ask for the one used on production.
+- A line delimited word list named `english-words.txt` must be present in `server/assets`. Don't ask for the one used on production.
 
 ### Setup (Docker)
 
 1. In the repo root directory, run `docker compose up`.
 
-### Setup (Semi-Dockerless)
+### Setup (Dockerless)
 
-1. Set up a Redis instance locally or within Docker. [TODO: details]
 1. Install Bun and Node 24.
-1. Server
-   1. Navigate to `/server` and run `npm i`.
-   1. For your first run, call `REBUILD_DICT=1 npm run dev` to build metadata from your word file. **This will take a long time for comprehensive word lists.**
+1. Server: navigate to `/server` and run `npm i`.
 1. Client
    1. Navigate to `/client` and run `bun i`.
+   1. Assets not part of this repo will have to be added manually. See `client/assets/LICENSES.md`.
    1. Run `bun run dev`.
 1. Navigate to http://localhost:5174.

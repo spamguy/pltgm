@@ -1,21 +1,23 @@
-import { PLATE_FORMAT_DICT, SOCKETS } from '#common/constants';
-import { generateRandomAlphanumeric, generateRandomNumber } from '#common/helpers';
-import { PlateOriginsList, type PlateOrigin } from '#common/types';
-import { GameService } from '#services/game.service';
-import TimerService from '#services/timer.service';
-
 import { getLogger } from '@logtape/logtape';
 import { randomUUID } from 'crypto';
 import { Socket } from 'socket.io';
-import { setInterval } from 'timers/promises';
+import { setTimeout as sleep } from 'timers/promises';
+
+import { PLATE_FORMAT_DICT, SOCKETS } from '#common/constants';
+import { PlateOriginsList, type PlateOrigin } from '#common/types';
+import { generateRandomAlphanumeric, generateRandomNumber } from '#helpers/random';
+import { GameService } from '#services/game.service';
+import TimerService from '#services/timer.service';
 
 const logger = getLogger('pltgm');
 
 let socket: Socket;
+let abortController: AbortController | null = null;
 
 function registerGameHandlers(s: Socket): Socket {
 	socket = s;
 	socket.on(SOCKETS.GAME_CREATE, createGame);
+	socket.on(SOCKETS.GAME_END, endGame);
 
 	return socket;
 }
@@ -29,42 +31,54 @@ async function createGame() {
 			PlateOriginsList[generateRandomNumber(1, PlateOriginsList.length) - 1];
 		const plateText =
 			process.env.MOCK_TEXT || generateRandomAlphanumeric(PLATE_FORMAT_DICT[origin]);
-		const triplet = plateText.replaceAll(/\d/g, '');
-		const game = GameService.saveGame({
-			id: randomUUID(), // Assuming the UUID will be unique.
-			origin,
-			triplet,
-			plateText,
-		});
+		const triplet = plateText.replaceAll(/[\d\s]/g, '');
+		const id = randomUUID();
 
-		logger.info('Created new game {gameId}', { gameId: game.id });
+		GameService.saveGame({ id, origin, triplet, plateText });
 
-		socket.emit(SOCKETS.GAME_CREATED, game);
+		logger.info('Created new game {gameId}', { gameId: id });
+
+		socket.emit(SOCKETS.GAME_CREATED, { id, origin, triplet, plateText });
 
 		const stopTime = new Date();
 		const roundLength = +(process.env.GAME_LENGTH || 60);
 		stopTime.setSeconds(stopTime.getSeconds() + roundLength);
 		socket.emit(SOCKETS.GAME_START, roundLength * 1000);
 
-		TimerService.register(game.id, stopTime);
+		TimerService.register(id, stopTime);
 
-		for await (const _ of setInterval(5000, null)) {
-			const now = Date.now();
+		const controller = new AbortController();
+		abortController = controller;
 
-			if (stopTime.getTime() - now <= 0) {
+		while (!controller.signal.aborted) {
+			await sleep(5000, null, { signal: controller.signal }).catch(() => {});
+			if (controller.signal.aborted) {
+				logger.info('Terminating game {id} early due to user exit', { id });
 				break;
 			}
+
+			const now = Date.now();
+			if (stopTime.getTime() - now <= 0) break;
 
 			socket.emit(SOCKETS.GAME_PING, stopTime.getTime() - now);
 		}
 
-		TimerService.unregister(game.id);
-		GameService.endGame(game.id);
-
-		socket.emit(SOCKETS.GAME_END, Date.now());
+		if (!controller.signal.aborted) {
+			endGame(id);
+		}
 	} catch (ex) {
-		logger.error('{error}', ex as Error);
+		logger.error(ex as Error);
 	}
+}
+
+function endGame(id: string) {
+	abortController?.abort();
+	abortController = null;
+	logger.info('Ending game {id}', { id });
+	TimerService.unregister(id);
+	const endTime = GameService.endGame(id);
+
+	socket.emit(SOCKETS.GAME_ENDED, endTime);
 }
 
 /* #endregion */

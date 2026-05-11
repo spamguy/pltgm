@@ -1,0 +1,10 @@
+*, *::before, *::after {
+	box-sizing: border-box;
+}
+
+body {
+	margin: 0;
+	background-color: #222222;
+	background-image: url('dark-tire.png');
+	color: white;
+}
