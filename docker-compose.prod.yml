@@ -17,17 +17,37 @@ services:
     image: ghcr.io/spamguy/pltgm-client:${TAG:-latest}
     ports:
       - "80:80"
+      - "443:443"
     build:
       context: .
       dockerfile: client/Dockerfile
       target: prod
+    volumes:
+      - certbot_certs:/etc/letsencrypt
+      - certbot_www:/var/www/certbot
     depends_on:
       - server
     networks:
       - pltgm-network
 
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - certbot_certs:/etc/letsencrypt
+      - certbot_www:/var/www/certbot
+    environment:
+      - DOMAIN=${DOMAIN}
+      - EMAIL=${EMAIL}
+    entrypoint: sh -c "trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;"
+    networks:
+      - pltgm-network
+
 volumes:
   sqlite_data:
+    driver: local
+  certbot_certs:
+    driver: local
+  certbot_www:
     driver: local
 
 networks:
