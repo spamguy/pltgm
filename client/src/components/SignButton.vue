@@ -37,5 +37,6 @@
 	align-items: center;
 	justify-content: center;
 	line-height: 1;
+	color: #ffffff;
 }
 </style>

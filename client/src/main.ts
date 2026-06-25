@@ -1,5 +1,6 @@
 import '@fontsource/dseg14-modern/300';
 import '@fontsource/dseg7-modern/700-italic';
+import '@fontsource/overpass/300';
 import '@fontsource/overpass/500';
 import { createPinia } from 'pinia';
 import { createApp } from 'vue';

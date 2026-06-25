@@ -1,5 +1,29 @@
-*, *::before, *::after {
+*,
+*::before,
+*::after {
 	box-sizing: border-box;
+}
+
+:root {
+	--base-size: 1rem;
+	--type-ratio: 1.25;
+
+	--h3: calc(var(--base-size) * var(--type-ratio));
+	--h2: calc(var(--h3) * var(--type-ratio));
+	--h1: calc(var(--h2) * var(--type-ratio));
+}
+
+h1 {
+	font-size: var(--h1);
+	margin: 5px auto;
+}
+h2 {
+	font-size: var(--h2);
+	margin: 5px auto;
+	color: #aaa;
+}
+h3 {
+	font-size: var(--h3);
 }
 
 body {

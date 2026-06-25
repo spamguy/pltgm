@@ -10,6 +10,8 @@ const openGithub = () => window.open('https://github.com/spamguy/pltgm', '_blank
 
 const isHelpHovered = ref(false);
 const isGitHubHovered = ref(false);
+const helpDialog = ref<HTMLElement | null>(null);
+const showHelp = () => (helpDialog.value as HTMLDialogElement)?.showModal();
 </script>
 
 <template>
@@ -21,7 +23,7 @@ const isGitHubHovered = ref(false);
 				<tr>
 					<td>
 						<SignButton
-							popovertarget="help-dialog"
+							@click="showHelp"
 							@mouseenter="isHelpHovered = true"
 							@mouseleave="isHelpHovered = false"
 						>
@@ -52,7 +54,25 @@ const isGitHubHovered = ref(false);
 			</tbody>
 		</table>
 
-		<dialog id="help-dialog" popover>hello :D</dialog>
+		<dialog
+			ref="helpDialog"
+			id="help-dialog"
+			@click.self="($event.target as HTMLDialogElement).close()"
+		>
+			<h1>Welcome to PLTGM!</h1>
+			<h2>(pronounced: 'plate game' or 'pultgum')</h2>
+
+			<div class="dialog-content">
+				<p>
+					Your job is to find as many words in a supplied license plate as possible before time runs
+					out.
+				</p>
+			</div>
+
+			<div class="nav-container">
+				<SignButton>Continue</SignButton>
+			</div>
+		</dialog>
 	</div>
 </template>
 
@@ -99,6 +119,33 @@ const isGitHubHovered = ref(false);
 			fill: white;
 			height: 100%;
 		}
+	}
+
+	dialog {
+		border-radius: 18px;
+		font-family: 'Overpass', sans-serif;
+		padding: 25px;
+
+		div.dialog-content {
+			margin: 20px auto 30px auto;
+			font-weight: 300;
+		}
+	}
+}
+
+dialog::backdrop {
+	background-color: transparent;
+	transition: background-color 300ms ease;
+	transition-behavior: allow-discrete;
+}
+
+dialog[open]::backdrop {
+	background-color: #505050;
+}
+
+@starting-style {
+	dialog[open]::backdrop {
+		background-color: transparent;
 	}
 }
 </style>
