@@ -6,7 +6,7 @@ You're stuck in traffic for three hours because the potato truck down the highwa
 
 ## How To Play
 
-Click 'New Game'. You will be given a license plate from an American state. Simply provide all the English words you can think of that use **all** the plate's letters **in order**. Proper nouns are not allowed.
+Click 'New Game'. You will be given a license plate from an American state. Simply list all the English words you can think of that use **all** the plate's letters **in order**. Proper nouns are not allowed.
 
 ### Example
 
@@ -15,7 +15,7 @@ Given the Washington license plate `TEN8646`:
 | Valid Words ✅          | Invalid Words ❌                           |
 | ----------------------- | ------------------------------------------ |
 | **ten**                 | net [letters not in order]                 |
-| **ten**t                | new [does not use all letters]             |
+| **ten**t                | **te**xt [does not use all letters]        |
 | bea**ten**              | en [*definitely* does not use all letters] |
 | effec**t**iv**en**ess   | benu**t**z**en** [not an English word]     |
 | effec**t**iv**en**esses | dé**ten**te [rewrite as *detente*]         |

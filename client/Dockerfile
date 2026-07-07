@@ -1,7 +1,7 @@
 # Build context must be the project root so server/src/common is accessible.
 
 # Use Bun only for installation (preserves bun.lock).
-FROM oven/bun:1.3-alpine AS install
+FROM oven/bun:1.4-alpine AS install
 RUN mkdir -p /temp/dev
 COPY client/package.json client/bun.lock /temp/dev/
 RUN cd /temp/dev && bun install --frozen-lockfile
@@ -15,7 +15,7 @@ COPY --from=install /temp/dev/node_modules node_modules
 COPY client/package.json client/vite.config.ts client/index.html ./
 ENTRYPOINT ["node", "node_modules/.bin/vite"]
 
-FROM oven/bun:1.3-alpine AS build
+FROM oven/bun:1.4-alpine AS build
 WORKDIR /app
 RUN chown -R bun:bun /app
 COPY --chown=bun:bun --from=install /temp/dev/node_modules node_modules

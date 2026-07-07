@@ -89,7 +89,7 @@ function easeInOutQuad(t: number) {
 	font-variant-numeric: tabular-nums;
 	gap: 0.05em;
 	font-family: 'DSEG7 Modern';
-	font-size: 6em;
+	font-size: var(--score-font-size, 6em);
 }
 
 .digits-wrapper {
