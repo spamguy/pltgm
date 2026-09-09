@@ -22,6 +22,8 @@ const timerProgress = computed(() => Math.min((gameStore.timer / 60000) * 100, 1
 		</div>
 
 		<div class="status-container" :style="{ '--timer-progress': timerProgress }">
+			<div class="timer-ring"></div>
+
 			<div class="status-inner">
 				<ScoreCounter />
 				<span class="score-units">pt</span>
@@ -76,19 +78,26 @@ const timerProgress = computed(() => Math.min((gameStore.timer / 60000) * 100, 1
 			--score-font-size: 30cqi;
 		}
 
-		&::before {
-			content: '';
+		.timer-ring {
 			position: absolute;
 			inset: -10px;
 			border-radius: 50%;
-			background: conic-gradient(
-				from -180deg,
-				white calc(var(--timer-progress) * 1%),
-				transparent 0
-			);
-			mask: radial-gradient(circle, transparent calc(70% - 10px), black calc(70% - 10px));
-			-webkit-mask: radial-gradient(circle, transparent calc(70% - 10px), black calc(70% - 10px));
+			filter: drop-shadow(rgba(255, 255, 255, 0.4) 0 0 24px);
 			pointer-events: none;
+
+			&::before {
+				content: '';
+				position: absolute;
+				inset: 0;
+				border-radius: 50%;
+				background: conic-gradient(
+					from -180deg,
+					white calc(var(--timer-progress) * 1%),
+					transparent 0
+				);
+				mask: radial-gradient(circle, transparent calc(70% - 10px), black calc(70% - 10px));
+				-webkit-mask: radial-gradient(circle, transparent calc(70% - 10px), black calc(70% - 10px));
+			}
 		}
 
 		.timer-label-wrap {
@@ -119,7 +128,7 @@ const timerProgress = computed(() => Math.min((gameStore.timer / 60000) * 100, 1
 			border-radius: 22px;
 		}
 
-		.status-container::before,
+		.status-container .timer-ring,
 		.status-container .timer-label-wrap {
 			display: none;
 		}
