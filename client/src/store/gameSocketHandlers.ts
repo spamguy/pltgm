@@ -1,6 +1,6 @@
 import { useIntervalFn, type Fn } from '@vueuse/core';
 
-import { type Game, type WordCheckSocketCallback } from '#common/types';
+import { type Game, type GameOutcome, type WordCheckSocketCallback } from '#common/types';
 import type { GameState } from './game';
 
 export function onGameCreated(store: GameState, game: Game): void {
@@ -38,10 +38,11 @@ export function onGamePing(store: GameState, newTimer: number): void {
 	store.timer = newTimer + latency;
 }
 
-export function onGameEnd(store: GameState, endTime: Date): void {
+export function onGameEnd(store: GameState, { endTime, highScores }: GameOutcome): void {
 	if (store.game) {
-		store.game.endedAt = endTime;
+		store.game.endedAt = new Date(endTime);
 	}
+	store.highScores = highScores;
 }
 
 /**

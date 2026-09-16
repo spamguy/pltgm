@@ -4,6 +4,8 @@ CREATE TABLE IF NOT EXISTS games (
 	plate_text TEXT NOT NULL,
 	origin TEXT NOT NULL,
 	score INTEGER NOT NULL DEFAULT 0,
+	high_score_origin TEXT,
+	high_score_text TEXT,
 	started_at TEXT DEFAULT CURRENT_TIMESTAMP,
 	ended_at TEXT
 );

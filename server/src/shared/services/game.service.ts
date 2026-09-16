@@ -1,7 +1,14 @@
-import { type DbGame, type Game, type WordCheckResult } from '#common/types';
+import {
+	type DbGame,
+	type Game,
+	type HighScore,
+	type PlateOrigin,
+	type WordCheckResult,
+} from '#common/types';
 import {
 	CHECK_GUESS,
 	GET_GAME,
+	GET_HIGH_SCORES,
 	INSERT_GAME,
 	INSERT_GUESS,
 	UPDATE_GAME_END,
@@ -63,5 +70,21 @@ export class GameService {
 		}
 
 		return 'ok';
+	}
+
+	static highScoresForTriplet(id: string, triplet: string): HighScore[] {
+		const rows = client.prepare(GET_HIGH_SCORES).all({ id, triplet }) as {
+			is_current_game: number;
+			score: number;
+			high_score_origin: PlateOrigin;
+			high_score_text: string;
+		}[];
+
+		return rows.map((row) => ({
+			isCurrentGame: !!row.is_current_game,
+			origin: row.high_score_origin,
+			text: row.high_score_text,
+			score: row.score,
+		}));
 	}
 }

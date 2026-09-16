@@ -11,13 +11,6 @@ SELECT *
   FROM games
  WHERE id = @id`;
 
-export const GET_TOP_TRIPLET_SCORES = `
-SELECT 'AAA' as name, score
-  FROM games
- WHERE triplet = @triplet
- ORDER BY score
- LIMIT 10`;
-
 export const UPDATE_GAME_END = `
 UPDATE games
    SET ended_at = CURRENT_TIMESTAMP
@@ -50,3 +43,13 @@ SELECT guess
        AND guess = LOWER(@guess)`;
 
 export const INSERT_GUESS = 'INSERT INTO guesses (game_id, guess) VALUES (@id, LOWER(@guess))';
+
+export const GET_HIGH_SCORES = `
+SELECT (@id = id) as is_current_game,
+       score,
+       high_score_origin,
+       high_score_text
+  FROM games
+ WHERE triplet = @triplet
+ ORDER BY score DESC
+ LIMIT 10 COLLATE NOCASE`;

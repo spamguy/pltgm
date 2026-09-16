@@ -29,6 +29,8 @@ export type Game = {
 	triplet: string;
 	plateText: string;
 	origin: PlateOrigin;
+	highScoreOrigin?: PlateOrigin;
+	highScoreText?: string;
 };
 
 // Represents Game minus anything defaulted by DB.
@@ -41,8 +43,15 @@ export type WordCheckParams = {
 
 // Reflects Redis naming convention.
 export type HighScore = {
-	name: string;
+	isCurrentGame: boolean;
+	origin: PlateOrigin;
+	text: string;
 	score: number;
+};
+
+export type GameOutcome = {
+	endTime: number;
+	highScores: HighScore[];
 };
 
 export type DictionaryEntry = {

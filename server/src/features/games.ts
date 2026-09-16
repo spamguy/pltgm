@@ -64,21 +64,22 @@ async function createGame() {
 		}
 
 		if (!controller.signal.aborted) {
-			endGame(id);
+			endGame(id, triplet);
 		}
 	} catch (ex) {
 		logger.error(ex as Error);
 	}
 }
 
-function endGame(id: string) {
+function endGame(id: string, triplet: string) {
 	abortController?.abort();
 	abortController = null;
 	logger.info('Ending game {id}', { id });
 	TimerService.unregister(id);
 	const endTime = GameService.endGame(id);
+	const highScores = GameService.highScoresForTriplet(id, triplet);
 
-	socket.emit(SOCKETS.GAME_ENDED, endTime);
+	socket.emit(SOCKETS.GAME_ENDED, { endTime, highScores });
 }
 
 /* #endregion */
