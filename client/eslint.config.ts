@@ -20,6 +20,12 @@ export default defineConfigWithVueTs(
 	vueTsConfigs.recommended,
 
 	{
+		rules: {
+			'vue/no-import-compiler-macros': 'error',
+		},
+	},
+
+	{
 		...pluginVitest.configs.recommended,
 		files: ['src/**/__tests__/*'],
 	},

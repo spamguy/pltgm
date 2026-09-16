@@ -36,7 +36,8 @@ onUnmounted(() => {
 		<GameOutcome v-else></GameOutcome>
 
 		<footer>
-			&copy; 2026 Will Oram. All resemblence to actual license plates is purely coincidental.
+			&copy; 2026 Will Oram. All resemblence to actual license plates, living or dead, is purely
+			coincidental.
 		</footer>
 	</div>
 </template>
@@ -50,6 +51,7 @@ onUnmounted(() => {
 	height: 100vh;
 	overflow: hidden;
 	position: relative;
+	font-family: 'Overpass', sans-serif;
 
 	footer {
 		position: absolute;

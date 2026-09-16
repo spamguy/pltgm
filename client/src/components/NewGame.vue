@@ -133,10 +133,18 @@ const showHelp = () => (helpDialog.value as HTMLDialogElement)?.showModal();
 	.button-container {
 		margin-top: 15px;
 		table-layout: fixed;
+		border-collapse: collapse;
 
 		td {
 			padding-left: 10px;
 			padding-right: 10px;
+		}
+
+		td:first-child {
+			padding-left: 0;
+		}
+		td:last-child {
+			padding-right: 0;
 		}
 
 		td:nth-child(1) {

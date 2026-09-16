@@ -18,6 +18,7 @@ export const SOCKETS = {
 	GAME_END: 'game:end',
 	GAME_ENDED: 'game:ended',
 	GAME_SCORE: 'game:score',
+	GAME_HIGH_SCORE: 'game:high-score',
 	WORD_CHECK: 'word:check',
 	WORD_CHECK_RESULT: 'word:check:result',
 };

@@ -10,12 +10,19 @@ describe('App', () => {
 
 	it('renders the New Game component when no game is loaded', () => {
 		wrapper = buildWrapper();
-		expect(wrapper.text()).toBe('hi there');
+		expect(wrapper.text()).toMatch(/^hi there/);
 	});
 
-	it('renders the Round Player component when a game is loaded', () => {
+	it('renders the Round Player component when a game is active', () => {
 		wrapper = buildWrapper(baseStore);
-		expect(wrapper.text()).toBe('round started');
+		expect(wrapper.text()).toMatch(/^round started/);
+	});
+
+	it('renders the Game Outcome component when a game is finished', () => {
+		const finishedGame = { ...baseStore };
+		finishedGame.game!.endedAt = new Date();
+		wrapper = buildWrapper(finishedGame);
+		expect(wrapper.text()).toMatch(/^game over, man, game over/);
 	});
 
 	function buildWrapper(game: GameState = noGameStore) {
@@ -32,6 +39,9 @@ describe('App', () => {
 					},
 					GamePlayer: {
 						template: 'round started',
+					},
+					GameOutcome: {
+						template: 'game over, man, game over',
 					},
 				},
 			},

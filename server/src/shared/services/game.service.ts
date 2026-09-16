@@ -1,10 +1,18 @@
-import { type DbGame, type Game, type WordCheckResult } from '#common/types';
+import {
+	type DbGame,
+	type Game,
+	type HighScore,
+	type PlateOrigin,
+	type WordCheckResult,
+} from '#common/types';
 import {
 	CHECK_GUESS,
 	GET_GAME,
+	GET_HIGH_SCORES,
 	INSERT_GAME,
 	INSERT_GUESS,
 	UPDATE_GAME_END,
+	UPDATE_GAME_HIGH_SCORE_TEXT,
 	UPDATE_GAME_SCORE,
 } from '#integrations/queries';
 import { client } from '#integrations/sqlite';
@@ -50,6 +58,10 @@ export class GameService {
 		client.prepare(UPDATE_GAME_SCORE).run({ score, id });
 	}
 
+	static saveHighScoreText(id: string, text: string, origin: PlateOrigin): boolean {
+		return client.prepare(UPDATE_GAME_HIGH_SCORE_TEXT).run({ id, text, origin }).changes > 0;
+	}
+
 	static isWordGuessed(id: string, guess: string): boolean {
 		return !!client.prepare(CHECK_GUESS).get({ id, guess });
 	}
@@ -63,5 +75,23 @@ export class GameService {
 		}
 
 		return 'ok';
+	}
+
+	static highScoresForTriplet(id: string, triplet: string): HighScore[] {
+		const rows = client.prepare(GET_HIGH_SCORES).all({ id, triplet }) as {
+			is_current_game: number;
+			score: number;
+			high_score_origin: PlateOrigin;
+			high_score_text: string;
+			id: string;
+		}[];
+
+		return rows.map((row) => ({
+			id: row.id,
+			isCurrentGame: !!row.is_current_game,
+			origin: row.high_score_origin,
+			text: row.high_score_text,
+			score: row.score,
+		}));
 	}
 }

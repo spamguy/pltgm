@@ -1,7 +1,12 @@
 import { defineStore } from 'pinia';
 
 import { SOCKETS } from '#common/constants';
-import { type Game, type WordCheckSocketCallback } from '#common/types';
+import {
+	type Game,
+	type GameOutcome,
+	type HighScore,
+	type WordCheckSocketCallback,
+} from '#common/types';
 import { socket } from '@/sockets';
 import {
 	onGameCreated,
@@ -17,6 +22,7 @@ export type GameState = {
 	guesses: string[];
 	timer: number;
 	results: WordCheckSocketCallback[];
+	highScores: HighScore[];
 };
 
 export const useGameStore = defineStore('game', {
@@ -25,6 +31,7 @@ export const useGameStore = defineStore('game', {
 		guesses: [],
 		timer: 0,
 		results: [],
+		highScores: [],
 	}),
 	actions: {
 		setupSockets() {
@@ -35,7 +42,7 @@ export const useGameStore = defineStore('game', {
 			);
 			socket.on(SOCKETS.GAME_SCORE, (newScore: number) => onGameScore(this, newScore));
 			socket.on(SOCKETS.GAME_PING, (newTimer: number) => onGamePing(this, newTimer));
-			socket.on(SOCKETS.GAME_ENDED, (endTime: Date) => onGameEnd(this, endTime));
+			socket.on(SOCKETS.GAME_ENDED, (payload: GameOutcome) => onGameEnd(this, payload));
 		},
 		async startGame() {
 			socket.emit(SOCKETS.GAME_CREATE);
