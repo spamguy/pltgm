@@ -6,11 +6,7 @@ import LicensePlate from './LicensePlate.vue';
 import ScoreCounter from './ScoreCounter.vue';
 
 const gameStore = useGameStore();
-const formattedTimer = computed(() => {
-	const seconds = Math.floor(gameStore.timer / 1000);
-
-	return `${seconds} s`;
-});
+const formattedTimer = computed(() => `${(gameStore.timer / 1000).toFixed(1)}s`);
 
 const timerProgress = computed(() => Math.min((gameStore.timer / 60000) * 100, 100));
 </script>
@@ -59,6 +55,7 @@ const timerProgress = computed(() => Math.min((gameStore.timer / 60000) * 100, 1
 		flex: 0 0 30cqw;
 		aspect-ratio: 1;
 		border-radius: 50%;
+		--timer-angle: calc(var(--timer-progress) * 3.6deg - 180deg);
 
 		.score-units {
 			width: 100%;
@@ -102,8 +99,8 @@ const timerProgress = computed(() => Math.min((gameStore.timer / 60000) * 100, 1
 
 		.timer-label-wrap {
 			position: absolute;
-			inset: -25px;
-			transform: rotate(calc(-180deg + var(--timer-progress) * 3.6deg));
+			inset: 0;
+			transform: rotate(var(--timer-angle));
 			pointer-events: none;
 		}
 
@@ -111,10 +108,19 @@ const timerProgress = computed(() => Math.min((gameStore.timer / 60000) * 100, 1
 			position: absolute;
 			top: 0;
 			left: 50%;
-			transform: translate(-50%, -50%) rotate(calc(180deg - var(--timer-progress) * 3.6deg));
+			--gap: 6px;
+			--half-w: 24px;
+			--half-h: 11px;
+			--push: calc(
+				10px + var(--gap) + var(--half-w) *
+					max(sin(var(--timer-angle)), -1 * sin(var(--timer-angle))) + var(--half-h) *
+					max(cos(var(--timer-angle)), -1 * cos(var(--timer-angle)))
+			);
+			transform: translateY(calc(-1 * var(--push))) translate(-50%, -50%)
+				rotate(calc(-1 * var(--timer-angle)));
 			display: inline-block;
 			white-space: nowrap;
-			font-size: 0.85rem;
+			font-size: 14pt;
 			font-weight: 600;
 		}
 	}
