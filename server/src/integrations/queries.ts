@@ -21,6 +21,14 @@ UPDATE games
    SET score = @score
  WHERE id = @id`;
 
+export const UPDATE_GAME_HIGH_SCORE_TEXT = `
+UPDATE games
+   SET high_score_text = @text,
+       high_score_origin = @origin
+ WHERE id = @id
+       AND ended_at IS NOT NULL
+       AND high_score_text IS NULL`;
+
 export const INSERT_DICTIONARY_WORD = `
 INSERT OR IGNORE INTO dictionary (word) VALUES (@word)`;
 
@@ -45,11 +53,13 @@ SELECT guess
 export const INSERT_GUESS = 'INSERT INTO guesses (game_id, guess) VALUES (@id, LOWER(@guess))';
 
 export const GET_HIGH_SCORES = `
-SELECT (@id = id) as is_current_game,
+SELECT id,
+       (@id = id) as is_current_game,
        score,
        high_score_origin,
        high_score_text
   FROM games
  WHERE triplet = @triplet
+       AND score > 0
  ORDER BY score DESC
  LIMIT 10 COLLATE NOCASE`;

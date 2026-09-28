@@ -4,7 +4,7 @@ import { Socket } from 'socket.io';
 import { setTimeout as sleep } from 'timers/promises';
 
 import { PLATE_FORMAT_DICT, SOCKETS } from '#common/constants';
-import { PlateOriginsList, type PlateOrigin } from '#common/types';
+import { PlateOriginsList, type HighScore, type PlateOrigin } from '#common/types';
 import { generateRandomAlphanumeric, generateRandomNumber } from '#helpers/random';
 import { GameService } from '#services/game.service';
 import TimerService from '#services/timer.service';
@@ -18,6 +18,7 @@ function registerGameHandlers(s: Socket): Socket {
 	socket = s;
 	socket.on(SOCKETS.GAME_CREATE, createGame);
 	socket.on(SOCKETS.GAME_END, endGame);
+	socket.on(SOCKETS.GAME_HIGH_SCORE, saveHighScore);
 
 	return socket;
 }
@@ -80,6 +81,21 @@ function endGame(id: string, triplet: string) {
 	const highScores = GameService.highScoresForTriplet(id, triplet);
 
 	socket.emit(SOCKETS.GAME_ENDED, { endTime, highScores });
+}
+
+function saveHighScore({ id, text, origin }: HighScore, ack?: (saved: boolean) => void) {
+	try {
+		const trimmed = typeof text === 'string' ? text.trim() : '';
+		const isValidOrigin = PlateOriginsList.includes(origin);
+		const saved = !!trimmed && isValidOrigin && GameService.saveHighScoreText(id, trimmed, origin);
+		if (!saved) {
+			logger.info('Rejected high score text for game {id}', { id });
+		}
+		ack?.(saved);
+	} catch (ex) {
+		logger.error(ex as Error);
+		ack?.(false);
+	}
 }
 
 /* #endregion */

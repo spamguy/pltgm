@@ -47,6 +47,7 @@ export type HighScore = {
 	origin: PlateOrigin;
 	text: string;
 	score: number;
+	id: string;
 };
 
 export type GameOutcome = {

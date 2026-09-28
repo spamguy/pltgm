@@ -9,6 +9,7 @@ import TimerService from '../../shared/services/timer.service.ts';
 const config = vi.hoisted(() => ({
 	GAME_ID: 'ABCD1234',
 	END_TIME: 1_753_920_000_000,
+	HIGH_SCORES: [{ id: 'ABCD1234', isCurrentGame: true, origin: 'CA', text: null, score: 42 }],
 	logger: {
 		info: vi.fn(),
 		error: vi.fn(),
@@ -29,6 +30,8 @@ vi.mock('../../shared/services/game.service.ts', () => ({
 		gameExists: vi.fn().mockReturnValue(false),
 		saveGame: vi.fn().mockReturnValue(undefined),
 		endGame: vi.fn().mockReturnValue(config.END_TIME),
+		saveHighScoreText: vi.fn().mockReturnValue(true),
+		highScoresForTriplet: vi.fn().mockReturnValue(config.HIGH_SCORES),
 	},
 }));
 
@@ -150,10 +153,14 @@ describe('Game features', () => {
 			expect(mockSocket.emit).toHaveBeenCalledWith(SOCKETS.GAME_PING, 60_000);
 		});
 
-		it('emits GAME_ENDED with the end timestamp after the round', async () => {
+		it('emits GAME_ENDED with the end timestamp and high scores after the round', async () => {
 			await invokeCreateGame();
 
-			expect(mockSocket.emit).toHaveBeenCalledWith(SOCKETS.GAME_ENDED, config.END_TIME);
+			expect(GameService.highScoresForTriplet).toHaveBeenCalledWith(config.GAME_ID, 'ABC');
+			expect(mockSocket.emit).toHaveBeenCalledWith(SOCKETS.GAME_ENDED, {
+				endTime: config.END_TIME,
+				highScores: config.HIGH_SCORES,
+			});
 		});
 
 		it('unregisters the game timer after the round ends', async () => {
@@ -169,6 +176,60 @@ describe('Game features', () => {
 			});
 
 			await expect(invokeCreateGame()).resolves.not.toThrow();
+			expect(config.logger.error).toHaveBeenCalledWith(testError);
+		});
+	});
+
+	describe('saveHighScore', () => {
+		function invokeSaveHighScore(payload: unknown, ack: Mock): void {
+			registerGameHandlers(mockSocket as unknown as Socket);
+			const [, handler] = (mockSocket.on as Mock).mock.calls.find(
+				([event]) => event === SOCKETS.GAME_HIGH_SCORE,
+			)!;
+			handler(payload, ack);
+		}
+
+		it('saves only the id, trimmed text and origin, ignoring client-sent score', () => {
+			const ack = vi.fn();
+			invokeSaveHighScore({ id: config.GAME_ID, text: '  ACE  ', origin: 'WA', score: 9999 }, ack);
+
+			expect(GameService.saveHighScoreText).toHaveBeenCalledWith(config.GAME_ID, 'ACE', 'WA');
+			expect(ack).toHaveBeenCalledWith(true);
+		});
+
+		it('rejects an unknown origin without touching the database', () => {
+			const ack = vi.fn();
+			invokeSaveHighScore({ id: config.GAME_ID, text: 'ACE', origin: 'ZZ' }, ack);
+
+			expect(GameService.saveHighScoreText).not.toHaveBeenCalled();
+			expect(ack).toHaveBeenCalledWith(false);
+		});
+
+		it('rejects blank text without touching the database', () => {
+			const ack = vi.fn();
+			invokeSaveHighScore({ id: config.GAME_ID, text: '   ', origin: 'CA' }, ack);
+
+			expect(GameService.saveHighScoreText).not.toHaveBeenCalled();
+			expect(ack).toHaveBeenCalledWith(false);
+		});
+
+		it('acks false when the service refuses the update', () => {
+			vi.mocked(GameService.saveHighScoreText).mockReturnValueOnce(false);
+			const ack = vi.fn();
+			invokeSaveHighScore({ id: config.GAME_ID, text: 'ACE', origin: 'CA' }, ack);
+
+			expect(ack).toHaveBeenCalledWith(false);
+		});
+
+		it('acks false and logs when the service throws', () => {
+			const testError = new Error('DB failure');
+			vi.mocked(GameService.saveHighScoreText).mockImplementationOnce(() => {
+				throw testError;
+			});
+			const ack = vi.fn();
+			invokeSaveHighScore({ id: config.GAME_ID, text: 'ACE', origin: 'CA' }, ack);
+
+			expect(ack).toHaveBeenCalledWith(false);
 			expect(config.logger.error).toHaveBeenCalledWith(testError);
 		});
 	});
