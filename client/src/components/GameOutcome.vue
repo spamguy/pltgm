@@ -28,4 +28,8 @@ const gameStore = useGameStore();
 .layout {
 	display: flex;
 }
+
+tbody:has(tr.editing) tr:not(.editing) {
+	opacity: 0.4;
+}
 </style>

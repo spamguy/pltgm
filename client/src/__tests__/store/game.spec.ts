@@ -253,7 +253,6 @@ describe('useGameStore', () => {
 		});
 	});
 
-	// -------------------------------------------------------------------------
 	describe('GAME_PING socket event', () => {
 		beforeEach(() => {
 			store = setupStore(baseStore);
@@ -275,7 +274,6 @@ describe('useGameStore', () => {
 		});
 	});
 
-	// -------------------------------------------------------------------------
 	describe('GAME_ENDED socket event', () => {
 		beforeEach(() => {
 			store = setupStore(baseStore);
@@ -284,7 +282,7 @@ describe('useGameStore', () => {
 		it('sets game.endedAt when a game is active', () => {
 			const endTime = new Date('2026-01-01T12:00:00Z');
 
-			triggerSocket(SOCKETS.GAME_ENDED, endTime);
+			triggerSocket(SOCKETS.GAME_ENDED, { endTime: endTime.getTime(), highScores: [] });
 
 			expect(store.game!.endedAt).toEqual(endTime);
 		});
@@ -294,7 +292,9 @@ describe('useGameStore', () => {
 			expect(store.game).toBeNull();
 
 			const endTime = new Date('2026-01-01T12:00:00Z');
-			expect(() => triggerSocket(SOCKETS.GAME_ENDED, endTime)).not.toThrow();
+			expect(() =>
+				triggerSocket(SOCKETS.GAME_ENDED, { endTime: endTime.getTime(), highScores: [] }),
+			).not.toThrow();
 		});
 	});
 
