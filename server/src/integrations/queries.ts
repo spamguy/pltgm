@@ -60,6 +60,7 @@ SELECT id,
        high_score_text
   FROM games
  WHERE triplet = @triplet
+       AND (is_current_game = 1 OR high_score_origin IS NOT NULL)
        AND score > 0
  ORDER BY score DESC
  LIMIT 10 COLLATE NOCASE`;

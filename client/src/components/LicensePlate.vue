@@ -62,10 +62,10 @@ const originUrl = computed(() => {
 	&.wa {
 		.plate-text {
 			font-family: LicensePlate;
-			font-size: 17cqw;
+			font-size: 29cqw;
 			line-height: 1;
 			position: absolute;
-			inset: 0;
+			inset: 15% 0 0 0;
 			display: flex;
 			align-items: center;
 			justify-content: center;
@@ -86,7 +86,7 @@ const originUrl = computed(() => {
 			font-size: 26cqw;
 			line-height: 1;
 			position: absolute;
-			inset: 30px 10px 0 0;
+			inset: 15% 0 0 0;
 			display: flex;
 			align-items: center;
 			justify-content: center;
