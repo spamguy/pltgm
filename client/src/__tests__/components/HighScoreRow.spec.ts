@@ -52,10 +52,9 @@ describe('HighScoreRow', () => {
 	describe('static row', () => {
 		it('renders a license plate and score', () => {
 			wrapper = buildWrapper(staticScore);
-			console.log(wrapper.html());
 
 			const plate = wrapper.getComponent(LicensePlate);
-			expect(plate.props()).toEqual({ text: 'BUBBA', origin: 'WA' });
+			expect(plate.props()).toEqual({ text: 'BUBBA', origin: 'WA', editable: false });
 			expect(wrapper.get('td.score').text()).toBe('666');
 			expect(wrapper.find('form').exists()).toBe(false);
 			expect(wrapper.get('tr').classes()).not.toContain('editing');
@@ -77,9 +76,25 @@ describe('HighScoreRow', () => {
 
 			expect(wrapper.get('tr').classes()).toContain('editing');
 			expect(wrapper.find('form').exists()).toBe(true);
-			expect(wrapper.findComponent(LicensePlate).exists()).toBe(false);
+			expect(wrapper.getComponent(LicensePlate).props('editable')).toBe(true);
 			expect(wrapper.findAll('option').map((o) => o.text())).toEqual([...PlateOriginsList]);
 			expect(wrapper.get('td.score').text()).toBe('42');
+		});
+
+		it('updates the editable plate template when the origin changes', async () => {
+			wrapper = buildWrapper(newScore);
+
+			await wrapper.get('select').setValue('WA');
+
+			expect(wrapper.getComponent(LicensePlate).props('origin')).toBe('WA');
+			expect(wrapper.get('.base-plate').classes()).toContain('wa');
+		});
+
+		it('autofocuses the plate text field', () => {
+			wrapper = buildWrapper(newScore, { attachTo: document.body });
+
+			expect(document.activeElement).toBe(wrapper.get("input[type='text']").element);
+			wrapper.unmount();
 		});
 
 		it('limits plate text to seven characters', () => {
@@ -151,6 +166,26 @@ describe('HighScoreRow', () => {
 			expect(wrapper.get('.error').text()).toContain('letters or numbers');
 		});
 
+		it('does not show an error before the player types', () => {
+			wrapper = buildWrapper(newScore);
+
+			expect(wrapper.find('.error').exists()).toBe(false);
+		});
+
+		it('validates plate text as it changes', async () => {
+			wrapper = buildWrapper(newScore);
+
+			await wrapper.get("input[type='text']").setValue('AB-12');
+			expect(wrapper.get('.error').text()).toContain('letters or numbers');
+
+			await wrapper.get("input[type='text']").setValue('AB12');
+			expect(wrapper.find('.error').exists()).toBe(false);
+
+			await wrapper.get("input[type='text']").setValue('');
+			expect(wrapper.get('.error').text()).toContain('Provide a name');
+			expect(socket.emit).not.toHaveBeenCalled();
+		});
+
 		it('clears the error on a valid resubmission', async () => {
 			wrapper = buildWrapper(newScore);
 
@@ -188,7 +223,11 @@ describe('HighScoreRow', () => {
 
 			expect(wrapper.find('form').exists()).toBe(false);
 			expect(wrapper.get('tr').classes()).not.toContain('editing');
-			expect(wrapper.getComponent(LicensePlate).props()).toEqual({ text: 'BUBBA', origin: 'CA' });
+			expect(wrapper.getComponent(LicensePlate).props()).toEqual({
+				text: 'BUBBA',
+				origin: 'CA',
+				editable: false,
+			});
 		});
 
 		it('stays in edit mode if the server rejects the save', async () => {
@@ -211,8 +250,9 @@ function mockServerSave(saved: boolean) {
 	}) as never);
 }
 
-function buildWrapper(highScore: HighScore) {
+function buildWrapper(highScore: HighScore, options: { attachTo?: HTMLElement } = {}) {
 	return mount(HighScoreRow, {
+		...options,
 		props: { highScore },
 		global: {
 			plugins: [

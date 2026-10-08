@@ -79,7 +79,7 @@ const timerProgress = computed(() => Math.min((gameStore.timer / 60000) * 100, 1
 			position: absolute;
 			inset: -10px;
 			border-radius: 50%;
-			filter: drop-shadow(rgba(255, 255, 255, 0.4) 0 0 24px);
+			filter: drop-shadow(rgba(255, 255, 255, 0.6) 0 0 24px);
 			pointer-events: none;
 
 			&::before {

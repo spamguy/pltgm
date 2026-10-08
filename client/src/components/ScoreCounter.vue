@@ -74,7 +74,7 @@ function easeInOutQuad(t: number) {
 			<span
 				v-for="(digit, i) in paddedDigits"
 				:key="i"
-				class="digit"
+				class="digit glow"
 				:class="{ leading: digit.isLeading }"
 				>{{ digit.char }}</span
 			>
@@ -100,11 +100,10 @@ function easeInOutQuad(t: number) {
 .digit {
 	display: inline-block;
 	transition: color 0.2s;
-	text-shadow: rgba(255, 255, 255, 0.4) 0 0 24px;
 }
 
 .digit.leading {
 	color: var(--countup-leading-color, #aaa);
-	text-shadow: #aaaaaa55 0 0 24px;
+	--glow-color: #aaaaaa55;
 }
 </style>

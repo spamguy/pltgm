@@ -32,3 +32,7 @@ body {
 	background-image: url('dark-tire.png');
 	color: white;
 }
+
+.glow {
+	text-shadow: var(--glow-color, rgba(255, 255, 255, 0.6)) 0 0 24px;
+}

@@ -25,7 +25,7 @@ const isEditing = computed(
 
 watch(isEditing, (editing) => emit('editing', editing), { immediate: true });
 
-function isScoreVisible({ isCurrentGame, score }: HighScore) {
+function isScoreVisible({ score }: HighScore) {
 	return score > 0;
 }
 
@@ -33,7 +33,10 @@ function onCancel() {
 	isCancelled.value = true;
 }
 
-function onSubmit() {
+// Validate as the player types, not just on submit.
+watch(scoreForm, validate, { deep: true });
+
+function validate() {
 	error.value = '';
 
 	if (!scoreForm.value.plateText) {
@@ -44,8 +47,12 @@ function onSubmit() {
 		error.value = 'Plate text must be under eight letters or numbers long.';
 	}
 
+	return !error.value;
+}
+
+function onSubmit() {
 	// Block submission.
-	if (error.value) {
+	if (!validate()) {
 		return;
 	}
 
@@ -62,9 +69,16 @@ function onSubmit() {
 <template>
 	<tr v-if="!isCancelled && isScoreVisible(highScore)" :class="{ editing: isEditing }">
 		<td v-if="isEditing">
-			<p class="blink">New high score!</p>
+			<p class="blink glow">New high score</p>
+			<p v-if="error" class="error" role="alert">{{ error }}</p>
+
 			<form @submit.prevent="onSubmit" novalidate>
-				<input type="text" maxlength="7" v-model="scoreForm.plateText" />
+				<LicensePlate
+					v-model:text="scoreForm.plateText"
+					:origin="scoreForm.origin"
+					editable
+					class="plate"
+				></LicensePlate>
 				<p>
 					<select v-model="scoreForm.origin">
 						<option v-for="o in PlateOriginsList" :key="o" :value="o">{{ o }}</option>
@@ -73,7 +87,6 @@ function onSubmit() {
 					<button type="button" @click="onCancel">Cancel</button>
 				</p>
 			</form>
-			<p v-if="error" class="error" role="alert">{{ error }}</p>
 		</td>
 		<td v-else>
 			<LicensePlate
@@ -100,9 +113,11 @@ tr {
 	}
 }
 
-/* Mimics the old <blink> tag: hard on/off toggle, no fade. */
 .blink {
 	animation: blink 1s step-end infinite;
+	font-family: 'DSEG14 Modern';
+	color: orange;
+	--glow-color: orange;
 }
 
 @keyframes blink {
@@ -128,10 +143,6 @@ td {
 
 	.plate {
 		width: 100px;
-	}
-
-	input[type='text'] {
-		width: 70px;
 	}
 }
 </style>

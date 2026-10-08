@@ -1,22 +1,40 @@
 <script setup lang="ts">
 import { useGameStore } from '@/store/game';
-import { computed } from 'vue';
+import { computed, onMounted, useTemplateRef } from 'vue';
 
 const props = defineProps({
 	origin: String,
 	text: String,
+	editable: { type: Boolean, default: false },
 });
+const emit = defineEmits<{ 'update:text': [text: string] }>();
 const gameStore = useGameStore();
-const origin = props.origin?.toLowerCase() || gameStore.game?.origin.toLowerCase();
+// Computed so an editable plate can switch templates on the fly.
+const origin = computed(() => props.origin?.toLowerCase() || gameStore.game?.origin.toLowerCase());
 const originUrl = computed(() => {
-	return new URL(`../assets/plates/${origin}.jpg`, import.meta.url).href;
+	return new URL(`../assets/plates/${origin.value}.jpg`, import.meta.url).href;
 });
+const input = useTemplateRef<HTMLInputElement>('input');
+
+// The autofocus attribute only fires on page load, so focus manually.
+onMounted(() => input.value?.focus());
 </script>
 
 <template>
 	<div class="base-plate" :class="origin">
 		<img :src="originUrl" />
-		<span class="plate-text">{{ props.text || gameStore.game?.plateText }}</span>
+		<input
+			v-if="editable"
+			ref="input"
+			type="text"
+			class="plate-text"
+			maxlength="7"
+			aria-label="Plate text"
+			:value="props.text"
+			@input="emit('update:text', ($event.target as HTMLInputElement).value)"
+			placeholder="UR NAME"
+		/>
+		<span v-else class="plate-text">{{ props.text || gameStore.game?.plateText }}</span>
 	</div>
 </template>
 
@@ -36,6 +54,21 @@ const originUrl = computed(() => {
 		width: 100%;
 		height: auto;
 		display: block;
+	}
+
+	/* Inherits per-origin .plate-text styling; just strip the native input chrome. */
+	input.plate-text {
+		box-sizing: border-box;
+		width: 100%;
+		min-width: 0;
+		margin-block: auto; /* Vertically centers if the input won't stretch between insets. */
+		padding: 0;
+		border: none;
+		background: transparent;
+		text-align: center;
+		&::placeholder {
+			color: #21175c77;
+		}
 	}
 
 	&.ca {
