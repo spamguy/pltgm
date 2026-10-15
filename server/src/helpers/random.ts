@@ -1,4 +1,5 @@
 import { readFile } from 'fs/promises';
+import { resolve } from 'path';
 
 const CUMULATIVE_LETTER_DISTRIBUTION = Array(26).fill(4);
 
@@ -10,8 +11,10 @@ try {
 	distributionConfig = JSON.parse(
 		await readFile('./assets/distSettings.json', { encoding: 'utf8' }),
 	);
+	console.log(`Loaded distribution settings from ${resolve('./assets/distSettings.json')}`);
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 } catch (err) {
+	console.warn(`Unable to read distribution settings at ${resolve('./assets/distSettings.json')}`);
 	// Stuff error.
 }
 distributionConfig.forEach(([k, v]: [string, number]) => {

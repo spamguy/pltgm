@@ -16,6 +16,29 @@
 	height: 80px;
 	min-width: 80px;
 	cursor: pointer;
+	position: relative;
+	overflow: hidden;
+}
+
+/* For shine effect. */
+.sign::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	pointer-events: none;
+	background: linear-gradient(
+		115deg,
+		rgba(255, 255, 255, 0) 30%,
+		rgba(255, 255, 255, 0.12) 42%,
+		rgba(255, 255, 255, 0.05) 50%,
+		rgba(255, 255, 255, 0) 62%
+	);
+	transition: transform 0.2s ease-out;
+}
+
+.sign:hover::after {
+	transform: translateX(10px);
 }
 
 .border {

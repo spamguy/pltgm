@@ -85,7 +85,7 @@ function endGame(id: string, triplet: string) {
 
 function saveHighScore({ id, text, origin }: HighScore, ack?: (saved: boolean) => void) {
 	try {
-		const trimmed = typeof text === 'string' ? text.trim() : '';
+		const trimmed = typeof text === 'string' ? text.trim().toUpperCase() : '';
 		const isValidOrigin = PlateOriginsList.includes(origin);
 		const saved = !!trimmed && isValidOrigin && GameService.saveHighScoreText(id, trimmed, origin);
 		if (!saved) {
