@@ -1,5 +1,11 @@
 import type { PlateOrigin, WordCheckResult } from './types.ts';
 
+// Matches the `npm run mock` plate so the tutorial is predictable.
+export const TUTORIAL_PLATE: { text: string; origin: PlateOrigin } = {
+	text: '6ING123',
+	origin: 'CA',
+};
+
 export const PLATE_FORMAT_DICT: Record<PlateOrigin, string> = {
 	CA: 'NLLLNNN',
 	// CO: 'LLLNNN',

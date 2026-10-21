@@ -17,7 +17,11 @@ const timerProgress = computed(() => Math.min((gameStore.timer / 60000) * 100, 1
 			<LicensePlate></LicensePlate>
 		</div>
 
-		<div class="status-container" :style="{ '--timer-progress': timerProgress }">
+		<div
+			class="status-container"
+			data-tour-guide="status"
+			:style="{ '--timer-progress': timerProgress }"
+		>
 			<div class="timer-ring"></div>
 
 			<div class="status-inner">
@@ -56,6 +60,10 @@ const timerProgress = computed(() => Math.min((gameStore.timer / 60000) * 100, 1
 		aspect-ratio: 1;
 		border-radius: 50%;
 		--timer-angle: calc(var(--timer-progress) * 3.6deg - 180deg);
+
+		/* To prevent vertical stretching. */
+		align-self: center;
+		min-height: 0;
 
 		.score-units {
 			width: 100%;

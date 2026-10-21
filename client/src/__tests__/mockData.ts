@@ -6,6 +6,7 @@ export const noGameStore: GameState = {
 	guesses: [],
 	results: [],
 	highScores: [],
+	isTutorial: false,
 };
 
 export const baseStore: GameState = {
@@ -29,4 +30,5 @@ export const baseStore: GameState = {
 		{ origin: 'CA', text: 'BILLY', score: 666, isCurrentGame: false, id: 'c' },
 		{ origin: 'CA', text: 'JIMMY', score: 666, isCurrentGame: false, id: 'b' },
 	],
+	isTutorial: false,
 };

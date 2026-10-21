@@ -4,11 +4,11 @@
 	"private": true,
 	"type": "module",
 	"engines": {
-		"node": ">=24.15.0"
+		"node": ">=24.22.0"
 	},
 	"scripts": {
 		"dev": "vite",
-		"build": "run-p type-check \"build-only {@}\" --",
+		"build": "run-p check-types \"build-only {@}\" --",
 		"preview": "vite preview",
 		"test:unit": "vitest",
 		"test:e2e": "playwright test",
@@ -24,14 +24,16 @@
 		"@vueuse/core": "14.2.1",
 		"pinia": "3.0.3",
 		"socket.io-client": "4.8.3",
-		"vue": "~3.5.42"
+		"v-tour-guide": "1.2.1",
+		"vue": "~3.5.42",
+		"vue-router": "5.4.0"
 	},
 	"devDependencies": {
 		"@pinia/testing": "1.0.3",
 		"@playwright/test": "1.55.1",
-		"@tsconfig/node24": "24.0.4",
-		"@types/bun": "1.4.0",
-		"@types/jsdom": "27.0.0",
+		"@tsconfig/node24": "24.0.5",
+		"@types/bun": "1.4.4",
+		"@types/jsdom": "30.0.0",
 		"@types/node": "24",
 		"@vitejs/plugin-vue": "6.0.6",
 		"@vitest/coverage-v8": "4.1.7",
@@ -44,9 +46,8 @@
 		"eslint-plugin-playwright": "2.2.2",
 		"eslint-plugin-prettier": "5.5.6",
 		"eslint-plugin-vue": "10.11.1",
-		"jiti": "2.5.1",
-		"jsdom": "27.0.0",
-		"npm-run-all2": "8.0.4",
+		"jiti": "2.7.0",
+		"jsdom": "30.0.0",
 		"prettier": "3.8.1",
 		"typescript": "5.9.3",
 		"typescript-eslint": "8.50.1",

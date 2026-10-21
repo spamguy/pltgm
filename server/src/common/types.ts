@@ -21,6 +21,10 @@ export type SocketCallback = {
 
 export type WordCheckSocketCallback = [string, WordCheckResult];
 
+export type GameCreateOptions = {
+	tutorial?: boolean;
+};
+
 export type Game = {
 	id: string;
 	score: number;

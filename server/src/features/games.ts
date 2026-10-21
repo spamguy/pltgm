@@ -3,21 +3,27 @@ import { randomUUID } from 'crypto';
 import { Socket } from 'socket.io';
 import { setTimeout as sleep } from 'timers/promises';
 
-import { PLATE_FORMAT_DICT, SOCKETS } from '#common/constants';
-import { PlateOriginsList, type HighScore, type PlateOrigin } from '#common/types';
+import { PLATE_FORMAT_DICT, SOCKETS, TUTORIAL_PLATE } from '#common/constants';
+import {
+	PlateOriginsList,
+	type GameCreateOptions,
+	type HighScore,
+	type PlateOrigin,
+} from '#common/types';
 import { generateRandomAlphanumeric, generateRandomNumber } from '#helpers/random';
 import { GameService } from '#services/game.service';
 import TimerService from '#services/timer.service';
 
 const logger = getLogger('pltgm');
 
-let socket: Socket;
-let abortController: AbortController | null = null;
+// Keyed by game ID so concurrent games on different connections can't abort each other.
+const abortControllers = new Map<string, AbortController>();
+// Tutorial games are untimed and never eligible for high scores.
+const tutorialGameIds = new Set<string>();
 
-function registerGameHandlers(s: Socket): Socket {
-	socket = s;
-	socket.on(SOCKETS.GAME_CREATE, createGame);
-	socket.on(SOCKETS.GAME_END, endGame);
+function registerGameHandlers(socket: Socket): Socket {
+	socket.on(SOCKETS.GAME_CREATE, (options?: GameCreateOptions) => createGame(socket, options));
+	socket.on(SOCKETS.GAME_END, (id: string, triplet: string) => endGame(socket, id, triplet));
 	socket.on(SOCKETS.GAME_HIGH_SCORE, saveHighScore);
 
 	return socket;
@@ -25,13 +31,15 @@ function registerGameHandlers(s: Socket): Socket {
 
 /* #region PRIVATE */
 
-async function createGame() {
+async function createGame(socket: Socket, { tutorial = false }: GameCreateOptions = {}) {
 	try {
-		const origin =
-			(process.env.MOCK_STATE as PlateOrigin) ||
-			PlateOriginsList[generateRandomNumber(1, PlateOriginsList.length) - 1];
-		const plateText =
-			process.env.MOCK_TEXT || generateRandomAlphanumeric(PLATE_FORMAT_DICT[origin]);
+		const origin = tutorial
+			? TUTORIAL_PLATE.origin
+			: (process.env.MOCK_STATE as PlateOrigin) ||
+				PlateOriginsList[generateRandomNumber(1, PlateOriginsList.length) - 1];
+		const plateText = tutorial
+			? TUTORIAL_PLATE.text
+			: process.env.MOCK_TEXT || generateRandomAlphanumeric(PLATE_FORMAT_DICT[origin]);
 		const triplet = plateText.replaceAll(/[\d\s]/g, '');
 		const id = randomUUID();
 
@@ -41,6 +49,11 @@ async function createGame() {
 
 		socket.emit(SOCKETS.GAME_CREATED, { id, origin, triplet, plateText });
 
+		if (tutorial) {
+			tutorialGameIds.add(id);
+			return;
+		}
+
 		const stopTime = new Date();
 		const roundLength = +(process.env.GAME_LENGTH || 60);
 		stopTime.setSeconds(stopTime.getSeconds() + roundLength);
@@ -49,7 +62,7 @@ async function createGame() {
 		TimerService.register(id, stopTime);
 
 		const controller = new AbortController();
-		abortController = controller;
+		abortControllers.set(id, controller);
 
 		while (!controller.signal.aborted) {
 			await sleep(5000, null, { signal: controller.signal }).catch(() => {});
@@ -65,18 +78,25 @@ async function createGame() {
 		}
 
 		if (!controller.signal.aborted) {
-			endGame(id, triplet);
+			endGame(socket, id, triplet);
 		}
 	} catch (ex) {
 		logger.error(ex as Error);
 	}
 }
 
-function endGame(id: string, triplet: string) {
-	abortController?.abort();
-	abortController = null;
+function endGame(socket: Socket, id: string, triplet: string) {
+	abortControllers.get(id)?.abort();
+	abortControllers.delete(id);
 	logger.info('Ending game {id}', { id });
 	TimerService.unregister(id);
+
+	// Tutorial rows never get `ended_at`, so they can never be given high score text.
+	if (tutorialGameIds.delete(id)) {
+		socket.emit(SOCKETS.GAME_ENDED, { endTime: Date.now(), highScores: [] });
+		return;
+	}
+
 	const endTime = GameService.endGame(id);
 	const highScores = GameService.highScoresForTriplet(id, triplet);
 

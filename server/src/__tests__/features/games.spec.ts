@@ -1,7 +1,8 @@
+import { randomUUID } from 'crypto';
 import type { Socket } from 'socket.io';
 import { setTimeout as sleep } from 'timers/promises';
 import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
-import { SOCKETS } from '../../common/constants.ts';
+import { SOCKETS, TUTORIAL_PLATE } from '../../common/constants.ts';
 import { registerGameHandlers } from '../../features/games.ts';
 import { GameService } from '../../shared/services/game.service.ts';
 import TimerService from '../../shared/services/timer.service.ts';
@@ -177,6 +178,97 @@ describe('Game features', () => {
 
 			await expect(invokeCreateGame()).resolves.not.toThrow();
 			expect(config.logger.error).toHaveBeenCalledWith(testError);
+		});
+	});
+
+	describe('tutorial games', () => {
+		function handlerFor(event: string) {
+			registerGameHandlers(mockSocket as unknown as Socket);
+			return mockSocket.on.mock.calls.find(([e]) => e === event)![1];
+		}
+
+		beforeEach(() => {
+			process.env.MOCK_STATE = 'WA';
+			process.env.MOCK_TEXT = 'ABC1234';
+		});
+
+		it('always uses the tutorial plate, ignoring mock env vars', async () => {
+			await handlerFor(SOCKETS.GAME_CREATE)({ tutorial: true });
+
+			expect(GameService.saveGame).toHaveBeenCalledWith(
+				expect.objectContaining({
+					origin: TUTORIAL_PLATE.origin,
+					plateText: TUTORIAL_PLATE.text,
+					triplet: 'ING',
+				}),
+			);
+			expect(mockSocket.emit).toHaveBeenCalledWith(
+				SOCKETS.GAME_CREATED,
+				expect.objectContaining({ plateText: TUTORIAL_PLATE.text }),
+			);
+		});
+
+		it('does not start a timed round', async () => {
+			await handlerFor(SOCKETS.GAME_CREATE)({ tutorial: true });
+
+			expect(mockSocket.emit).not.toHaveBeenCalledWith(SOCKETS.GAME_START, expect.anything());
+			expect(TimerService.register).not.toHaveBeenCalled();
+			expect(sleep).not.toHaveBeenCalled();
+			expect(mockSocket.emit).not.toHaveBeenCalledWith(SOCKETS.GAME_ENDED, expect.anything());
+		});
+
+		it('ends without marking the game ended or fetching high scores', async () => {
+			await handlerFor(SOCKETS.GAME_CREATE)({ tutorial: true });
+			handlerFor(SOCKETS.GAME_END)(config.GAME_ID, 'ING');
+
+			expect(GameService.endGame).not.toHaveBeenCalled();
+			expect(GameService.highScoresForTriplet).not.toHaveBeenCalled();
+			expect(mockSocket.emit).toHaveBeenCalledWith(SOCKETS.GAME_ENDED, {
+				endTime: expect.any(Number),
+				highScores: [],
+			});
+		});
+	});
+
+	describe('concurrent games', () => {
+		function handlerFor(socket: { on: Mock }, event: string) {
+			return socket.on.mock.calls.find(([e]) => e === event)![1];
+		}
+
+		it("permits ending one game without abort another connection's game", async () => {
+			// Sleep until aborted, so both rounds stay open until explicitly ended.
+			vi.mocked(sleep).mockImplementation(
+				(_ms, _value, options) =>
+					new Promise((_resolve, reject) =>
+						options?.signal?.addEventListener('abort', () => reject(new Error('aborted'))),
+					),
+			);
+			vi.mocked(randomUUID).mockReturnValueOnce('A-A-A-A-A').mockReturnValueOnce('B-B-B-B-B');
+
+			const socketA = { on: vi.fn(), emit: vi.fn() };
+			const socketB = { on: vi.fn(), emit: vi.fn() };
+			registerGameHandlers(socketA as unknown as Socket);
+			registerGameHandlers(socketB as unknown as Socket);
+
+			const gameA = handlerFor(socketA, SOCKETS.GAME_CREATE)();
+			const gameB = handlerFor(socketB, SOCKETS.GAME_CREATE)();
+
+			handlerFor(socketA, SOCKETS.GAME_END)('A-A-A-A-A', 'ABC');
+			await gameA;
+
+			expect(config.logger.info).toHaveBeenCalledWith(expect.stringContaining('early'), {
+				id: 'A-A-A-A-A',
+			});
+			expect(config.logger.info).not.toHaveBeenCalledWith(expect.stringContaining('early'), {
+				id: 'B-B-B-B-B',
+			});
+			expect(socketA.emit).toHaveBeenCalledWith(SOCKETS.GAME_ENDED, expect.anything());
+			expect(socketB.emit).not.toHaveBeenCalledWith(SOCKETS.GAME_ENDED, expect.anything());
+
+			handlerFor(socketB, SOCKETS.GAME_END)('B-B-B-B-B', 'ABC');
+			await gameB;
+
+			expect(socketB.emit).toHaveBeenCalledWith(SOCKETS.GAME_ENDED, expect.anything());
 		});
 	});
 
