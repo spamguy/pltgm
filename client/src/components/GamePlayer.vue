@@ -13,11 +13,15 @@ const timerProgress = computed(() => Math.min((gameStore.timer / 60000) * 100, 1
 
 <template>
 	<div v-if="gameStore.game" class="game-container">
-		<div class="plate-container">
+		<div class="plate-container" data-tour-guide="plate">
 			<LicensePlate></LicensePlate>
 		</div>
 
-		<div class="status-container" :style="{ '--timer-progress': timerProgress }">
+		<div
+			class="status-container"
+			data-tour-guide="status"
+			:style="{ '--timer-progress': timerProgress }"
+		>
 			<div class="timer-ring"></div>
 
 			<div class="status-inner">

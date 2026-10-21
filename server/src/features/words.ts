@@ -9,16 +9,13 @@ import TimerService from '#services/timer.service';
 
 const logger = getLogger('pltgm');
 
-let socket: Socket;
-
-function registerWordHandlers(s: Socket): Socket {
-	socket = s;
-	socket.on(SOCKETS.WORD_CHECK, checkWord);
+function registerWordHandlers(socket: Socket): Socket {
+	socket.on(SOCKETS.WORD_CHECK, (params: WordCheckParams) => checkWord(socket, params));
 
 	return socket;
 }
 
-async function checkWord({ gameId, word }: WordCheckParams): Promise<void> {
+async function checkWord(socket: Socket, { gameId, word }: WordCheckParams): Promise<void> {
 	const game = GameService.getGame(gameId);
 
 	try {

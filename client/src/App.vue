@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted } from 'vue';
 
+import { RouterView } from 'vue-router';
+
 import { SOCKETS } from '#common/constants';
-import GameOutcome from '@/components/GameOutcome.vue';
-import GamePlayer from '@/components/GamePlayer.vue';
-import NewGame from '@/components/NewGame.vue';
 import { socket } from '@/sockets';
 import { useGameStore } from '@/store/game';
 
@@ -31,13 +30,11 @@ onUnmounted(() => {
 
 <template>
 	<div class="app-root">
-		<NewGame v-if="!store.game"></NewGame>
-		<GamePlayer v-else-if="!store.game.endedAt"></GamePlayer>
-		<GameOutcome v-else></GameOutcome>
+		<RouterView />
 
 		<footer>
 			&copy; 2026 Will Oram. All resemblence to actual license plates, living or dead, is purely
-			coincidental.
+			coincidental. Do not play while driving.
 		</footer>
 	</div>
 </template>

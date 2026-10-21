@@ -51,7 +51,7 @@ function checkWord() {
 </script>
 
 <template>
-	<div class="guess-container">
+	<div class="guess-container" data-tour-guide="guess-form">
 		<form @submit.prevent="checkWord()">
 			<input type="text" placeholder="Guess word here. . ." v-model="wordGuess" />
 			<div class="btn-container">

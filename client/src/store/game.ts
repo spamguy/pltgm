@@ -3,6 +3,7 @@ import { defineStore } from 'pinia';
 import { SOCKETS } from '#common/constants';
 import {
 	type Game,
+	type GameCreateOptions,
 	type GameOutcome,
 	type HighScore,
 	type WordCheckSocketCallback,
@@ -23,6 +24,7 @@ export type GameState = {
 	timer: number;
 	results: WordCheckSocketCallback[];
 	highScores: HighScore[];
+	isTutorial: boolean;
 };
 
 export const useGameStore = defineStore('game', {
@@ -32,6 +34,7 @@ export const useGameStore = defineStore('game', {
 		timer: 0,
 		results: [],
 		highScores: [],
+		isTutorial: false,
 	}),
 	actions: {
 		setupSockets() {
@@ -46,6 +49,19 @@ export const useGameStore = defineStore('game', {
 		},
 		async startGame() {
 			socket.emit(SOCKETS.GAME_CREATE);
+		},
+		startTutorial() {
+			this.$reset();
+			this.isTutorial = true;
+			// Tutorial games are untimed, so the timer stays full instead of counting down.
+			this.timer = 60000;
+			socket.emit(SOCKETS.GAME_CREATE, { tutorial: true } satisfies GameCreateOptions);
+		},
+		endTutorial() {
+			if (this.game) {
+				socket.emit(SOCKETS.GAME_END, this.game.id);
+			}
+			this.$reset();
 		},
 	},
 });
