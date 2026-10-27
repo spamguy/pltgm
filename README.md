@@ -2,7 +2,7 @@
 
 # PLTGM: The License Plate Game
 
-You're stuck in traffic for three hours because the potato truck down the highway flipped over. All you can see is the rear of the 2014 Hyndai Elantra in front of you. What are you going to do with your time?
+You're stuck in traffic for three hours because the potato truck down the highway flipped over. All you can see is the rear of the 2014 Hyundai Elantra in front of you. What are you going to do with your time?
 
 ## How To Play
 
