@@ -47,7 +47,7 @@ async function checkWord(socket: Socket, { gameId, word }: WordCheckParams): Pro
 			socket.emit(SOCKETS.GAME_SCORE, newScore);
 
 			// TODO: Reconsider or make dynamic based on triplet word count.
-			const bonusSeconds = 2;
+			const bonusSeconds = 4;
 			const remaining = TimerService.addTime(gameId, bonusSeconds);
 			if (remaining !== null) {
 				socket.emit(SOCKETS.GAME_PING, remaining);

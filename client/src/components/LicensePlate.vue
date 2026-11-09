@@ -21,7 +21,7 @@ onMounted(() => input.value?.focus());
 </script>
 
 <template>
-	<div class="base-plate" :class="origin">
+	<div class="base-plate" :class="origin" data-tour-guide="plate">
 		<img :src="originUrl" />
 		<input
 			v-if="editable"
