@@ -1,27 +1,27 @@
-FROM node:24.22-alpine AS base
+FROM oven/bun:1.4-alpine AS base
 
+# sqlite CLI for debugging only; the server uses the built-in bun:sqlite.
 RUN apk add --no-cache sqlite
 
 # Create SQLite directory to mount.
-RUN mkdir -p /data && chown node:node /data
+RUN mkdir -p /data && chown bun:bun /data
 
 WORKDIR /app
 
 FROM base AS install
-COPY --chown=node:node package*.json ./
+COPY --chown=bun:bun package.json bun.lock ./
 COPY assets assets
-RUN npm install
-RUN chown -R node:node node_modules
+RUN bun install --frozen-lockfile
+RUN chown -R bun:bun node_modules
 
 FROM install AS dev
-USER node
-CMD ["npm", "run", "mock"]
+USER bun
+CMD ["bun", "run", "mock"]
 
 FROM base AS prod
-COPY --chown=node:node package*.json ./
+COPY --chown=bun:bun package.json bun.lock ./
 COPY assets assets
-RUN npm ci --omit=dev
-COPY --chown=node:node src src
-USER node
-CMD ["node", "--experimental-strip-types", "src/index.ts"]
-
+RUN bun install --frozen-lockfile --production
+COPY --chown=bun:bun src src
+USER bun
+CMD ["bun", "src/index.ts"]

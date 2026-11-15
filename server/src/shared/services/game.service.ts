@@ -23,7 +23,8 @@ const logger = getLogger('pltgm');
 
 export class GameService {
 	static saveGame(game: DbGame): Game {
-		client.prepare(INSERT_GAME).run(game);
+		const { id, origin, triplet, plateText } = game;
+		client.prepare(INSERT_GAME).run({ id, origin, triplet, plateText });
 
 		const gOut = this.getGame(game.id);
 		if (!gOut) {

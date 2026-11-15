@@ -10,21 +10,19 @@
 		"#scripts/*": "./src/scripts/*.ts"
 	},
 	"scripts": {
-		"mock": "MOCK_TEXT=6ING123 MOCK_STATE=CA npm run dev",
-		"dev": "tsx watch --include ./src ./src/index.ts",
-		"build": "tsc",
-		"start": "node dist/index.js",
+		"mock": "MOCK_TEXT=6ING123 MOCK_STATE=CA bun run dev",
+		"dev": "bun run --hot src/index.ts",
+		"start": "bun run src/index.ts",
 		"test": "vitest",
 		"coverage": "vitest run --coverage",
 		"check-types": "tsc --noEmit",
 		"eslint": "eslint",
-		"lint": "npm run eslint && npm run check-types"
+		"lint": "bun run eslint && bun run check-types"
 	},
 	"dependencies": {
-		"@hono/node-server": "~2.1.1",
 		"@logtape/hono": "2.3.2",
 		"@logtape/logtape": "2.3.2",
-		"better-sqlite3": "12.9.0",
+		"@socket.io/bun-engine": "0.1.2",
 		"date-fns": "4.1.0",
 		"hono": "~4.13.13",
 		"nanoid": "6.0.1",
@@ -32,24 +30,21 @@
 	},
 	"devDependencies": {
 		"@eslint/js": "^9.39.1",
-		"@tsconfig/node-ts": "23.6.2",
-		"@tsconfig/node24": "24.0.3",
-		"@types/better-sqlite3": "^7.6.13",
-		"@types/node": "24.9.2",
-		"@vitest/coverage-v8": "4.0.16",
-		"@vitest/eslint-plugin": "1.6.4",
+		"@tsconfig/bun": "1.0.12",
+		"@types/bun": "1.4.4",
+		"@vitest/coverage-v8": "5.1.0",
+		"@vitest/eslint-plugin": "1.6.28",
 		"eslint": "9.39.1",
 		"eslint-config-prettier": "10.1.8",
 		"eslint-import-resolver-typescript": "4.4.4",
 		"eslint-plugin-import-x": "4.16.1",
 		"eslint-plugin-prettier": "5.5.4",
-		"globals": "16.5.0",
+		"globals": "17.14.0",
 		"memfs": "4.50.0",
 		"prettier": "3.9.10",
-		"tsx": "4.21.0",
 		"type-fest": "5.6.0",
 		"typescript": "5.9.3",
 		"typescript-eslint": "8.55.0",
-		"vitest": "4.0.16"
+		"vitest": "5.1.0"
 	}
 }

@@ -24,6 +24,8 @@ export default defineConfig(
 		},
 		rules: {
 			'import-x/no-dynamic-require': 'warn',
+			// Bun built-ins (bun:sqlite) aren't known to the resolver.
+			'import-x/no-unresolved': ['error', { ignore: ['^bun:'] }],
 			'@typescript-eslint/no-explicit-any': 'warn',
 		},
 	},

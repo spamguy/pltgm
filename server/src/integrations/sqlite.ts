@@ -1,5 +1,5 @@
 import { getLogger } from '@logtape/logtape';
-import SqlDatabase from 'better-sqlite3';
+import { Database } from 'bun:sqlite';
 import { mkdirSync, readFileSync } from 'fs';
 import { dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
@@ -7,18 +7,10 @@ import { fileURLToPath } from 'url';
 const dbPath = process.env.DB_PATH ?? './data/pltgm.db';
 mkdirSync(dirname(dbPath), { recursive: true });
 
-const client = new SqlDatabase(dbPath, {
-	verbose: (message) => {
-		const m = message as string;
-
-		// Skip dictionary build messages.
-		if (!m.includes('INTO dictionary') && !['BEGIN', 'COMMIT'].includes(m)) {
-			getLogger('sqlite').debug(m);
-		}
-	},
-});
-client.pragma('journal_mode = WAL');
-client.pragma('foreign_keys = ON');
+// `strict` lets named `@params` in queries.ts bind from un-prefixed object keys.
+const client = new Database(dbPath, { create: true, strict: true });
+client.exec('PRAGMA journal_mode = WAL');
+client.exec('PRAGMA foreign_keys = ON');
 
 process.on('exit', () => client.close());
 

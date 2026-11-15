@@ -4,21 +4,25 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 // Mock all dependencies before importing the module
 const mockInitLogging = vi.fn();
 const mockLogOnError = vi.fn();
-const mockLogOnRequest = vi.fn();
-const mockInitRedis = vi.fn();
+const mockInitDatabase = vi.fn();
 const mockInitDictionary = vi.fn();
 const mockServe = vi.fn();
-const mockInitWebsocket = vi.fn();
+const mockHandleRequest = vi.fn();
+const mockWebsocketHandler = { open: vi.fn(), message: vi.fn(), close: vi.fn() };
+const mockEngine = {
+	handleRequest: mockHandleRequest,
+	handler: vi.fn(() => ({ fetch: vi.fn(), websocket: mockWebsocketHandler })),
+};
+const mockInitWebsocket = vi.fn(() => mockEngine);
 const mockIoMiddleware = vi.fn();
 
-vi.mock('../core/logging/logging.ts', () => ({
+vi.mock('../core/logging.ts', () => ({
 	initLogging: mockInitLogging,
 	logOnError: mockLogOnError,
-	logOnRequest: mockLogOnRequest,
 }));
 
-vi.mock('../integrations/db/redis.ts', () => ({
-	initRedis: mockInitRedis,
+vi.mock('#integrations/sqlite', () => ({
+	initDatabase: mockInitDatabase,
 }));
 
 vi.mock('../shared/services/dictionary.service.ts', () => ({
@@ -27,26 +31,18 @@ vi.mock('../shared/services/dictionary.service.ts', () => ({
 	},
 }));
 
-vi.mock('@hono/node-server', () => ({
-	serve: mockServe,
-}));
-
 vi.mock('../shared/middleware/sockets.ts', () => ({
 	default: mockIoMiddleware,
 	initWebsocket: mockInitWebsocket,
+	SOCKET_PATH: '/ws/',
 }));
 
 const mockApp = {
 	use: vi.fn(),
+	all: vi.fn(),
 	onError: vi.fn(),
 	fetch: vi.fn(),
-	post: vi.fn(),
-	route: vi.fn(),
 };
-
-vi.mock('../features/games.ts', () => ({
-	routes: mockApp,
-}));
 
 vi.mock('hono', () => {
 	return {
@@ -57,28 +53,18 @@ vi.mock('hono', () => {
 });
 
 describe('Application Index', () => {
-	let mockServer: any;
-
 	beforeEach(() => {
-		// Setup default mock implementations.
-		mockInitRedis.mockResolvedValue(undefined);
+		vi.clearAllMocks();
 		mockInitDictionary.mockResolvedValue(undefined);
-		mockInitWebsocket.mockResolvedValue(undefined);
+		vi.stubGlobal('Bun', { serve: mockServe });
 
-		mockServer = {
-			listen: vi.fn(),
-			close: vi.fn(),
-		};
-		mockServe.mockReturnValue(mockServer);
-
-		// Setup environment
 		process.env.SERVER_PORT = '3001';
 	});
 
 	afterEach(async () => {
 		await reset();
 		vi.resetModules();
-		vi.restoreAllMocks();
+		vi.unstubAllGlobals();
 		delete process.env.SERVER_PORT;
 	});
 
@@ -87,6 +73,38 @@ describe('Application Index', () => {
 		await import('../index.ts');
 
 		expect(Hono).toHaveBeenCalled();
+	});
+
+	it('routes the socket path to the socket.io engine', async () => {
+		await import('../index.ts');
+
+		expect(mockInitWebsocket).toHaveBeenCalled();
+		expect(mockApp.all).toHaveBeenCalledWith('/ws/', expect.any(Function));
+
+		const route = mockApp.all.mock.calls[0][1];
+		const raw = new Request('http://localhost/ws/');
+		const server = { fake: true };
+		route({ req: { raw }, env: server });
+
+		expect(mockHandleRequest).toHaveBeenCalledWith(raw, server);
+	});
+
+	it('serves the app with the engine websocket handler', async () => {
+		await import('../index.ts');
+
+		expect(mockServe).toHaveBeenCalledWith({
+			port: 3001,
+			idleTimeout: 30,
+			fetch: mockApp.fetch,
+			websocket: mockWebsocketHandler,
+		});
+	});
+
+	it('initializes the database and dictionary', async () => {
+		await import('../index.ts');
+
+		expect(mockInitDatabase).toHaveBeenCalled();
+		expect(mockInitDictionary).toHaveBeenCalled();
 	});
 
 	describe('Environment configuration', () => {

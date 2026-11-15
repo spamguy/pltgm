@@ -1,36 +1,12 @@
 {
-	"extends": ["@tsconfig/node24/tsconfig.json", "@tsconfig/node-ts/tsconfig.json"],
-	// "compilerOptions": {
-	// 	"target": "es2022",
-	// 	"useDefineForClassFields": true,
-	// 	"module": "commonjs",
-	// 	"lib": ["ES2022", "DOM", "DOM.Iterable"],
-	// 	"skipLibCheck": true,
-
-	// 	/* Bundler mode */
-	// 	// "moduleResolution": "",
-	// 	"allowImportingTsExtensions": true,
-	// 	"isolatedModules": true,
-	// 	"moduleDetection": "force",
-	// 	"noEmit": true,
-
-	// 	/* Linting */
-	// 	"strict": true,
-	// 	"noUnusedLocals": true,
-	// 	"noUnusedParameters": true,
-	// 	"noFallthroughCasesInSwitch": true,
-	// 	"noUncheckedSideEffectImports": true
-	// },
+	"extends": "@tsconfig/bun/tsconfig.json",
 	"compilerOptions": {
-		"module": "esnext",
-		"moduleResolution": "bundler",
-		"target": "esnext",
 		"useDefineForClassFields": true,
 		"esModuleInterop": true,
 		"forceConsistentCasingInFileNames": true,
 		"libReplacement": false,
-		"types": ["node"],
-		"useUnknownInCatchVariables": true
+		"useUnknownInCatchVariables": true,
+		"noUncheckedIndexedAccess": false
 	},
 	"include": ["src", "__mocks__"]
 }

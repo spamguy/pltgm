@@ -4,7 +4,7 @@ PLTGM ("plate game") is a word game. The player gets a random US license plate a
 
 Monorepo with two independent packages. There is no root `package.json`.
 
-- `server/`: Node 24 (`.nvmrc`), Hono, socket.io, better-sqlite3, LogTape. Managed with **npm**.
+- `server/`: Bun, Hono (served by `Bun.serve`), socket.io via `@socket.io/bun-engine`, `bun:sqlite`, LogTape. Managed with **bun** (`bun.lock`). Node 24 (`.nvmrc`) is still needed for Vitest.
 - `client/`: Vue 3 + Pinia + Vite, socket.io-client. Managed with **bun** (`bun.lock`).
 
 ## Commands
@@ -12,11 +12,11 @@ Monorepo with two independent packages. There is no root `package.json`.
 Server (run in `server/`):
 
 ```sh
-npm run dev          # tsx watch, port 3001
-npm run mock         # dev with a fixed plate (MOCK_TEXT=6ING123 MOCK_STATE=CA)
-npm test             # vitest (watch); `npx vitest run path/to/file.spec.ts` for a single file
-npm run coverage
-npm run lint         # eslint + tsc --noEmit
+bun run dev          # bun --watch, port 3001
+bun run mock         # dev with a fixed plate (MOCK_TEXT=6ING123 MOCK_STATE=CA)
+bun run test         # vitest on Node (watch); `bunx vitest run path/to/file.spec.ts` for a single file
+bun run coverage
+bun run lint         # eslint + tsc --noEmit
 ```
 
 Client (run in `client/`):
@@ -52,7 +52,7 @@ Server layout (`server/src/`). Use the `#` import aliases defined in `server/pac
 - `index.ts`: bootstrap. Starts Hono, logging, socket.io, runs the SQLite migration, then loads the dictionary.
 - `features/`: socket event handlers. `#features/*`
 - `shared/services/`: `GameService` and `DictionaryService` (static classes over SQLite), plus `TimerService` (a singleton). `#services/*`
-- `integrations/sqlite.ts`: the shared `client` (path from `DB_PATH`, default `./data/pltgm.db`, WAL mode). `queries.ts` has every SQL string, using named `@params`. `#integrations/*`
+- `integrations/sqlite.ts`: the shared `bun:sqlite` `client` (path from `DB_PATH`, default `./data/pltgm.db`, WAL mode, `strict: true` so `@params` bind from un-prefixed keys). Bind only the keys a query uses, and no `Date` values. `queries.ts` has every SQL string, using named `@params`. `#integrations/*`
 - `scripts/migrate.sql`: idempotent `CREATE TABLE IF NOT EXISTS` schema (`games`, `dictionary`, `guesses`). It runs on every boot, so schema changes must stay idempotent.
 - `common/`: types and constants **shared with the client**. `#common/*`
 
@@ -69,7 +69,9 @@ Client layout (`client/src/`): `App.vue` switches between `NewGame` (no game), `
 ## Gotchas
 
 - **`server/src/common` is imported by the client** through the `#common` alias in `client/vite.config.ts`. The client Docker build also copies it in. Keep `constants.ts` and `types.ts` free of Node-only code. `helpers.ts` uses date-fns, which the client doesn't depend on.
-- **Prod runs the server TypeScript directly** with `node --experimental-strip-types src/index.ts`, with no `tsc` build. Use only erasable TS syntax: no `enum`, `namespace`, or constructor parameter properties. Relative imports need the `.ts` extension.
+- **Prod runs the server TypeScript directly** with `bun src/index.ts`, with no `tsc` build. Keep to erasable TS syntax anyway (no `enum`, `namespace`, or constructor parameter properties) and `.ts` extensions on relative imports.
+- **Vitest runs on Node, not Bun** (the coverage-v8 provider needs V8). Node can't load `bun:sqlite`, so `vitest.config.ts` aliases it to the stub in `server/__mocks__/bun-sqlite.ts`. Don't use other `bun:*` modules or the `Bun` global outside `index.ts` and `integrations/` unless they're mocked.
+- socket.io is bound to `@socket.io/bun-engine` at `SOCKET_PATH` (`/ws/`), routed first in `index.ts`. `Bun.serve`'s `idleTimeout` must stay above socket.io's 25s `pingInterval`.
 - Socket handlers must get the socket through a closure in `register*Handlers`, never from a module-level variable, or concurrent connections overwrite each other. Round-loop `AbortController`s in `features/games.ts` live in a `Map` keyed by game ID for the same reason.
 - The round length is `GAME_LENGTH` (env, default 60s) on the server, but the client hardcodes `60000` in `onGameStart` and `GamePlayer.vue`.
 - To add a plate origin, you need all of these: an entry in `PlateOriginsList` and `PLATE_FORMAT_DICT`, a `plates/<origin>.jpg` image, and per-origin `.plate-text` CSS in `LicensePlate.vue`.
