@@ -4,6 +4,7 @@ import { computed } from 'vue';
 import GuessForm from './GuessForm.vue';
 import LicensePlate from './LicensePlate.vue';
 import ScoreCounter from './ScoreCounter.vue';
+import GuessLogItem from './GuessLogItem.vue';
 
 const gameStore = useGameStore();
 const formattedTimer = computed(() => `${(gameStore.timer / 1000).toFixed(1)}s`);
@@ -36,6 +37,14 @@ const timerProgress = computed(() => Math.min((gameStore.timer / 60000) * 100, 1
 	</div>
 
 	<GuessForm />
+
+	<div class="log-container">
+		<GuessLogItem
+			v-for="(g, index) in gameStore.results"
+			:guess="g"
+			v-bind:key="index"
+		></GuessLogItem>
+	</div>
 </template>
 
 <style lang="css">
@@ -45,7 +54,7 @@ const timerProgress = computed(() => Math.min((gameStore.timer / 60000) * 100, 1
 	container-type: inline-size;
 	width: 100%;
 	max-width: 1100px;
-	margin: 0 auto;
+	margin: 0 auto 30px auto;
 	padding: 20px;
 	gap: 20px;
 
@@ -147,5 +156,9 @@ const timerProgress = computed(() => Math.min((gameStore.timer / 60000) * 100, 1
 			display: none;
 		}
 	}
+}
+
+.log-container {
+	display: flex;
 }
 </style>

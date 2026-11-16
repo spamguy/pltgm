@@ -188,7 +188,7 @@ describe('useGameStore', () => {
 		});
 
 		it('adds the word to guesses and results when status is "ok"', () => {
-			const result: WordCheckSocketCallback = ['tribulation', 'ok'];
+			const result: WordCheckSocketCallback = { guessWord: 'tribulation', result: 'ok', score𝚫: 1 };
 
 			triggerSocket(SOCKETS.WORD_CHECK_RESULT, result);
 
@@ -197,7 +197,11 @@ describe('useGameStore', () => {
 		});
 
 		it('does NOT add to guesses when status is "not_a_matching_word"', () => {
-			const result: WordCheckSocketCallback = ['cornfield', 'not_a_matching_word'];
+			const result: WordCheckSocketCallback = {
+				guessWord: 'cornfield',
+				result: 'not_a_matching_word',
+				score𝚫: -1,
+			};
 
 			triggerSocket(SOCKETS.WORD_CHECK_RESULT, result);
 
@@ -206,7 +210,11 @@ describe('useGameStore', () => {
 		});
 
 		it('does NOT add to guesses when status is "already_tried"', () => {
-			const result: WordCheckSocketCallback = ['facet', 'already_tried'];
+			const result: WordCheckSocketCallback = {
+				guessWord: 'facet',
+				result: 'already_tried',
+				score𝚫: -1,
+			};
 
 			triggerSocket(SOCKETS.WORD_CHECK_RESULT, result);
 
@@ -214,19 +222,27 @@ describe('useGameStore', () => {
 			expect(store.results).toContainEqual(result);
 		});
 
-		it('does NOT add to guesses when status is "round_ended"', () => {
-			const result: WordCheckSocketCallback = ['intrepid', 'round_ended'];
+		it('does NOT add to guesses OR results when status is "round_ended"', () => {
+			const result: WordCheckSocketCallback = {
+				guessWord: 'intrepid',
+				result: 'round_ended',
+				score𝚫: 0,
+			};
 
 			triggerSocket(SOCKETS.WORD_CHECK_RESULT, result);
 
 			expect(store.guesses).not.toContain('intrepid');
-			expect(store.results).toContainEqual(result);
+			expect(store.results).not.toContainEqual(result);
 		});
 
 		it('accumulates guesses and results across multiple events', () => {
-			triggerSocket(SOCKETS.WORD_CHECK_RESULT, ['first', 'ok']);
-			triggerSocket(SOCKETS.WORD_CHECK_RESULT, ['second', 'already_tried']);
-			triggerSocket(SOCKETS.WORD_CHECK_RESULT, ['third', 'ok']);
+			triggerSocket(SOCKETS.WORD_CHECK_RESULT, { guessWord: 'first', result: 'ok', score𝚫: 1 });
+			triggerSocket(SOCKETS.WORD_CHECK_RESULT, {
+				guessWord: 'second',
+				result: 'already_tried',
+				score𝚫: 1,
+			});
+			triggerSocket(SOCKETS.WORD_CHECK_RESULT, { guessWord: 'third', result: 'ok', score𝚫: 1 });
 
 			expect(store.guesses).toEqual(['first', 'third']);
 			expect(store.results).toHaveLength(3);

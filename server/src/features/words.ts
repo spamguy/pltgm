@@ -2,7 +2,12 @@ import { getLogger } from '@logtape/logtape';
 import type { Socket } from 'socket.io';
 
 import { SOCKETS } from '#common/constants';
-import type { SocketCallback, WordCheckParams, WordCheckResult } from '#common/types';
+import type {
+	SocketCallback,
+	WordCheckParams,
+	WordCheckResult,
+	WordCheckSocketCallback,
+} from '#common/types';
 import DictionaryService from '#services/dictionary.service';
 import { GameService } from '#services/game.service';
 import TimerService from '#services/timer.service';
@@ -28,7 +33,10 @@ async function checkWord(socket: Socket, { gameId, word }: WordCheckParams): Pro
 
 		if (game.endedAt) {
 			logger.warn(`Attempt to guess {word} for game ${gameId} after round ended`);
-			socket.emit(SOCKETS.WORD_CHECK_RESULT, 'round_ended');
+			socket.emit(SOCKETS.WORD_CHECK_RESULT, {
+				guessWord: word,
+				result: 'round_ended',
+			} as WordCheckSocketCallback);
 			return;
 		}
 
@@ -57,7 +65,11 @@ async function checkWord(socket: Socket, { gameId, word }: WordCheckParams): Pro
 			wordStatus = 'already_tried';
 		}
 
-		socket.emit(SOCKETS.WORD_CHECK_RESULT, [word, wordStatus]);
+		socket.emit(SOCKETS.WORD_CHECK_RESULT, {
+			guessWord: word,
+			result: wordStatus,
+			score𝚫: game.score - word.length,
+		} as WordCheckSocketCallback);
 	} catch (ex) {
 		if (!(ex instanceof Error)) {
 			return;

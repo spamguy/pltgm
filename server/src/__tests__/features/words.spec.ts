@@ -59,7 +59,11 @@ describe('Word features', () => {
 
 		expect(socket.emit).toHaveBeenCalledWith(SOCKETS.GAME_SCORE, config.GAME.score + 6);
 		expect(socket.emit).toHaveBeenCalledWith(SOCKETS.GAME_PING, config.REMAINING);
-		expect(socket.emit).toHaveBeenCalledWith(SOCKETS.WORD_CHECK_RESULT, ['beaten', 'ok']);
+		expect(socket.emit).toHaveBeenCalledWith(SOCKETS.WORD_CHECK_RESULT, {
+			guessWord: 'beaten',
+			result: 'ok',
+			score𝚫: 4,
+		});
 	});
 
 	it('does not emit to a socket that connected later', async () => {

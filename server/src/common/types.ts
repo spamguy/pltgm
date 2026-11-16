@@ -19,7 +19,11 @@ export type SocketCallback = {
 	error?: string;
 };
 
-export type WordCheckSocketCallback = [string, WordCheckResult];
+export type WordCheckSocketCallback = {
+	guessWord: string;
+	result: WordCheckResult;
+	score𝚫: number;
+};
 
 export type GameCreateOptions = {
 	tutorial?: boolean;

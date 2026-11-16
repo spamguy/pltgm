@@ -1,42 +1,11 @@
 <script setup lang="ts">
-import { SOCKETS, WORD_CHECK_RESULT_MESSAGES } from '#common/constants';
+import { SOCKETS } from '#common/constants';
 import { socket } from '@/sockets';
 import { useGameStore } from '@/store/game';
-import { nextTick, onUnmounted, ref, watch } from 'vue';
+import { ref } from 'vue';
 
 const gameStore = useGameStore();
 const wordGuess = ref('');
-const guessResult = ref('');
-const resultKey = ref(0);
-
-function triggerGlow(isOk: boolean) {
-	document.querySelectorAll('.viewport-glow').forEach((el) => el.remove());
-	const div = document.createElement('div');
-	div.className = `viewport-glow ${isOk ? 'glow-ok' : 'glow-error'}`;
-	document.body.appendChild(div);
-	setTimeout(() => div.remove(), 600);
-}
-
-onUnmounted(() => {
-	document.querySelectorAll('.viewport-glow').forEach((el) => el.remove());
-});
-
-watch(
-	() => gameStore.results.length,
-	() => {
-		const latest = gameStore.results[gameStore.results.length - 1];
-		if (!latest) return;
-		// Force the animation to restart by toggling the element off then on.
-		guessResult.value = '';
-		nextTick(() => {
-			guessResult.value = WORD_CHECK_RESULT_MESSAGES[latest[1]];
-			resultKey.value++;
-			wordGuess.value = '';
-		});
-
-		triggerGlow(latest[1] === 'ok');
-	},
-);
 
 function checkWord() {
 	if (!gameStore.game || !wordGuess.value) {
@@ -47,6 +16,9 @@ function checkWord() {
 		gameId: gameStore.game.id,
 		word: wordGuess.value,
 	});
+
+	// Clear field for next guess.
+	wordGuess.value = '';
 }
 </script>
 
@@ -57,59 +29,15 @@ function checkWord() {
 			<div class="btn-container">
 				<button type="submit"><span>Check</span></button>
 			</div>
-			<div v-if="guessResult" :key="resultKey" class="guess-result">{{ guessResult }}</div>
 		</form>
 	</div>
 </template>
 
 <style lang="css">
-.viewport-glow {
-	position: fixed;
-	inset: 0;
-	pointer-events: none;
-	animation: glow-fade 0.5s forwards;
-	z-index: 9999;
-}
-
-.glow-ok {
-	box-shadow: inset 0 0 60px 20px rgba(0, 200, 80, 0.45);
-}
-
-.glow-error {
-	box-shadow: inset 0 0 60px 20px rgba(220, 40, 40, 0.45);
-}
-
-@keyframes glow-fade {
-	0% {
-		opacity: 1;
-	}
-	100% {
-		opacity: 0;
-	}
-}
-
-.guess-result {
-	animation: fade 1.4s forwards;
-}
-
-@keyframes fade {
-	0% {
-		opacity: 1;
-	}
-	71% {
-		opacity: 1;
-	}
-	100% {
-		opacity: 0;
-	}
-}
-
 .guess-container {
 	form {
 		display: flex;
 		justify-content: center;
-		align-items: center;
-		height: 300px; /* TODO: More responsive approach. */
 
 		input:focus,
 		button:focus {

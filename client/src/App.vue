@@ -53,6 +53,7 @@ onUnmounted(() => {
 	footer {
 		position: absolute;
 		bottom: 10px;
+		text-align: center;
 	}
 }
 </style>

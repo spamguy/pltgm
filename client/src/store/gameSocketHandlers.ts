@@ -13,13 +13,14 @@ export function onGameStart(store: GameState): void {
 	const { pause } = useIntervalFn(() => timerIntervalFn(store, pause), 100, { immediate: true });
 }
 
-export function onWordCheckResult(store: GameState, result: WordCheckSocketCallback): void {
-	const [word, status] = result;
-	if (status === 'ok') {
-		store.guesses.push(word);
+export function onWordCheckResult(store: GameState, guess: WordCheckSocketCallback): void {
+	if (guess.result === 'ok') {
+		store.guesses.push(guess.guessWord);
 	}
 
-	store.results.push(result);
+	if (guess.result !== 'round_ended') {
+		store.results.push(guess);
+	}
 }
 
 export function onGameScore(store: GameState, newScore: number): void {
